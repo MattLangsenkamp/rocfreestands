@@ -1,10 +1,9 @@
-
 package learningsjs
-
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
-import model.Model
 import org.scalajs.dom
+import hello.*
+import smithy4s.Timestamp
 
 // import javascriptLogo from "/javascript.svg"
 @js.native @JSImport("/javascript.svg", JSImport.Default)
@@ -34,11 +33,12 @@ def LiveChart(): Unit =
 end LiveChart
 
 def setupCounter2(element: dom.Element): Unit =
-  val m = Model(97, "hello")
+  //val m = Model(97, "hello")
   var counter = 0
+  val L = Location(99, "", "", "", 0, 0, Timestamp.epoch)
 
   def setCounter(count: Int): Unit =
-    counter = m.count
+    counter = L.id // m.count
     element.innerHTML = s"count is $counter"
 
   element.addEventListener("click", e => setCounter(counter + 1))
