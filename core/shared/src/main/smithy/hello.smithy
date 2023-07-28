@@ -1,23 +1,44 @@
 $version: "2"
+
 namespace hello
 
 use alloy#simpleRestJson
 
 @simpleRestJson
-service HelloService {
-    operations: [GetHello]
+service LocationsService {
+    operations: [GetLocations, CreateLocation]
 }
 
-/// Fetch a greeting for a name
-@http(method: "GET", uri: "/api/hello/{name}")
+@http(method: "GET", uri: "/locations")
 @readonly
-operation GetHello {
+operation GetLocations {
     input := {
-        @required @httpLabel name: String
-    },
-    output := {
-        @required greeting: String
     }
+    output: Locations
+}
+@http(method: "POST", uri: "/location")
+operation CreateLocation {
+
+    input: LocationInput
+
+    output: Location
+}
+
+structure LocationInput {
+    @required
+    address: String
+
+    @required
+    name: String
+
+    @required
+    description: String
+
+    @required
+    latitude: Double
+
+    @required
+    longitude: Double
 }
 
 structure Location {
@@ -41,4 +62,13 @@ structure Location {
 
     @required
     creationDateTime: Timestamp
+}
+
+list LocationList {
+    member: Location
+}
+
+structure Locations {
+    @required
+    locations: LocationList
 }

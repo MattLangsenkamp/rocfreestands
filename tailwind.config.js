@@ -3,7 +3,7 @@ module.exports = {
   content: [
     "./index.html",
     "./main.js",
-    "./src/**/*.{scala, js}"
+    "./front/**/*.{scala, js}"
   ],
   theme: {
     extend: {
