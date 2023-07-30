@@ -23,14 +23,13 @@ object HttpHelper:
   ): Cmd[IO, Msg] =
     val io: IO[Msg] = r match
       case Left(_) =>
-        println("failed!")
         IO.pure(Msg.NoOp)
       case Right(c) =>
         val latLng      = marker.getLatLng()
         val name        = nlf.name.getOrElse("No Name")
         val description = nlf.description.getOrElse("NoDescription")
         c.createLocation("", name, description, latLng.lat, latLng.lng)
-          .map(l => Msg.AddLocationToMap(l))
+          .map(l => Msg.OnAddLocationSuccess(l))
 
     Cmd.Run(io)
 

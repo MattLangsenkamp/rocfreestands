@@ -37,7 +37,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
   def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) =
     (
       Model.init(),
-      Cmd.emit(Msg.CheckIfLoggedIn)
+      Cmd.Batch(Cmd.emit(Msg.CheckIfLoggedIn), HttpHelper.getLocations)
     )
 
   def update(
