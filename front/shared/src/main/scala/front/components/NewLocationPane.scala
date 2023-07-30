@@ -26,34 +26,38 @@ def newLocationPane: Model => Html[Msg] = (model: Model) =>
   val imageError =
     model.newLocationForm.imageErrorMessage.map(div(cls := "pl-7 text-red-600/75")(_)).orEmpty
 
-  div(Styles.z1000Style, cls := locationPaneStyles)(
-    div(cls := "h-5/6 flex-row flex")(
-      div(cls := "p-2 sm:flex w-full ")(text("Image"), imageError),
+  div(Styles.z1000Style, Styles.vhStyle(65), cls := locationPaneStyles)(
+    div(Styles.vhStyle(40), cls := "flex-row flex w-full")(
+      // div(cls := "p-2 sm:flex w-full ")(text("Image"), imageError),
       input(
-        cls := Styles.mapButtonClasses,
+        // cls := Styles.mapButtonClasses,
         `type` := "file",
         accept := "image/png, image/jpeg",
         id     := "image-upload",
         onInput(_ => Msg.LoadImageToLocationForm)
-      )
+      ),
+      previewImg
     ),
-    previewImg,
-    div(cls := "h-5/6 flex-row flex")(
+    div(cls := "pt-5 flex-row flex")(
       div(cls := "p-2 sm:flex w-full")(text("Name"), nameError),
       input(
         cls         := Styles.inputFormClasses,
         placeholder := "Enter Username",
-        onInput(name => Msg.UpdateLocationForm(model.newLocationForm.copy(name = Some(name).filter(_.nonEmpty))))
+        onInput(name =>
+          Msg.UpdateLocationForm(model.newLocationForm.copy(name = Some(name).filter(_.nonEmpty)))
+        )
       )
     ),
-    div(cls := "h-5/6 pt-5 flex-row flex")(
+    div(cls := "pt-5 flex-row flex")(
       div(cls := "p-2 sm:flex w-full")(text("Description"), descriptionError),
       textarea(
         rows        := "3",
         cls         := Styles.inputFormClasses,
         placeholder := "Give a description for this stand",
         onInput(description =>
-          Msg.UpdateLocationForm(model.newLocationForm.copy(description = Some(description).filter(_.nonEmpty)))
+          Msg.UpdateLocationForm(
+            model.newLocationForm.copy(description = Some(description).filter(_.nonEmpty))
+          )
         )
       )()
     )

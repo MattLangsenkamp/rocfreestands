@@ -39,3 +39,9 @@ object Styles:
 
   val z1000Style: Attr[Nothing] =
     style("z-index", "1000")
+
+  val vh65Style: Attr[Nothing] =
+    style("height", "65vh")
+
+  val vhStyle: Int => Attr[Nothing] = i =>
+    style("max-height", s"${i}vh")
