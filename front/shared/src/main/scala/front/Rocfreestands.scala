@@ -4,23 +4,14 @@ import cats.effect.IO
 import cats.effect.IO.asyncForIO
 import front.components.*
 import front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
-import front.model.{
-  AuthStatus,
-  LoginForm,
-  Model,
-  Msg,
-  NewLocationStep,
-  Routes,
-  Styles,
-  Location as Loc
-}
+import front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, Routes, Styles, Location as Loc}
 import org.scalajs.dom
 import org.scalajs.dom.{Event, document, html}
 import typings.leaflet.mod as L
 import tyrian.*
 import tyrian.Html.*
 import tyrian.cmds.*
-
+import hello.Locations
 import scala.concurrent.duration.*
 import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.annotation.*
@@ -46,10 +37,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
   def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) =
     (
       Model.init(),
-      Cmd.Batch(
-        HttpHelper.createLocation("", "", "", 0, 0),
-        Cmd.emit(Msg.CheckIfLoggedIn)
-      )
+      Cmd.emit(Msg.CheckIfLoggedIn)
     )
 
   def update(
@@ -77,8 +65,18 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
               (model, Cmd.None)
             case None => (model.copy(map = Some(LeafletHelper.init(model))), Cmd.None)
         case _ => (model, Cmd.None)
-    case Msg.LoadImage =>
-      (model, EffectHelper.readImage(model))
+    case Msg.AddLocationsToMap(locations) =>
+      (
+        model.copy(locations = Locations(model.locations.locations ::: locations.locations)),
+        EffectHelper.addLocationsToMap(model, locations)
+      )
+    case Msg.AddLocationToMap(location) =>
+      (
+        model.copy(locations = Locations(model.locations.locations ::: location :: Nil)),
+        EffectHelper.addNewPermanentLocation(model, location)
+      )
+    case Msg.LoadImageToLocationForm =>
+      (model, EffectHelper.readImageToLocationForm(model))
     case Msg.UpdateLoginForm(f) =>
       (model.copy(loginForm = f), Cmd.None)
     case Msg.SubmitLoginForm(f) =>
@@ -99,6 +97,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
         model.copy(authStatus = AuthStatus(jwt = Some(jwt), signedIn = true)),
         EffectHelper.setJWT(model, jwt)
       )
+    // TODO rename this command, to reflect that it is just the start of the adding process
     case Msg.AddNewLocation =>
       val nextMessage = model.map match
         case Some(map) =>
@@ -128,32 +127,26 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     case Msg.UpdateLocationForm(locationForm) =>
       (model.copy(newLocationForm = locationForm), Cmd.None)
     case Msg.SubmitNewLocationForm =>
-      // TODO add network request to make sure it all gets added correctly
       val (nf, valid) = LeafletHelper.updateLocationForm(model.newLocationForm)
       if (valid)
         model.newLocationMarker match
           case Some(marker) =>
-            val removeMarkerSideEffect = EffectHelper.removeLocationSelectionMarker(model)
-            val loc                    = LeafletHelper.newPermanentLocation(marker, model)
-            val addLocationSideEffect  = EffectHelper.addNewPermanentLocation(model, loc)
-            val newLocations           = model.locations.appended(loc)
-            (
-              model.copy(
-                newLocationStep = None,
-                locations = newLocations,
-                // only clear location form on success?
-                newLocationForm = Loc.newLocationForm()
-              ),
-              Cmd.Batch(removeMarkerSideEffect, addLocationSideEffect)
-            )
+            (model, HttpHelper.createLocation(nf, marker))
           case None => (model, Cmd.None)
       else
         (model.copy(newLocationForm = nf), Cmd.None)
-
     case Msg.CancelAddDetails =>
       (model.copy(newLocationStep = Some(NewLocationStep.LocationSelection)), Cmd.None)
-    case Msg.OnAddLocationSuccess => ???
-    case Msg.OnAddLocationError   => ???
+    case Msg.OnAddLocationSuccess(loc) =>
+      val removeMarkerSideEffect = EffectHelper.removeLocationSelectionMarker(model)
+      (
+        model.copy(
+          newLocationStep = None,
+          newLocationForm = Loc.newLocationForm()
+        ),
+        Cmd.Batch(removeMarkerSideEffect, Cmd.emit(Msg.AddLocationToMap(loc)))
+      )
+    case Msg.OnAddLocationError => ???
   def view(model: Model): Html[Msg] =
     val contents =
       model.curPage match

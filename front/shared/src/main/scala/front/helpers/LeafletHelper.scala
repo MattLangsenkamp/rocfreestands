@@ -1,6 +1,7 @@
 package front.helpers
 
-import front.model.{Location, LocationForm, Model, Msg}
+import front.model.{LocationForm, Model, Msg}
+import hello.{Location, Locations}
 import typings.leaflet.mod as L
 import typings.leaflet.mod.{IconOptions, Icon_, Marker_}
 import tyrian.Html.div
@@ -41,8 +42,8 @@ object LeafletHelper:
       .addTo(map)
     map
 
-  def addLocations(map: L.Map_, locations: List[Location]): L.Map_ =
-    locations.foldRight(map)((l, m) => addLocation(m, l))
+  def addLocations(map: L.Map_, locations: Locations): L.Map_ =
+    locations.locations.foldRight(map)((l, m) => addLocation(m, l))
 
   // hover:text-indigo-200
   private def setContent(location: Location): String =
@@ -99,18 +100,6 @@ object LeafletHelper:
       .setTitle("New Location")
       .setIcon(icon)
     L.marker(map.getCenter(), opts)
-
-  def newPermanentLocation(marker: L.Marker_[Any], model: Model): Location =
-    val latLng = marker.getLatLng()
-    Location(
-      None,
-      "",
-      model.newLocationForm.name.getOrElse("No Name"),
-      model.newLocationForm.description.getOrElse("No Description"),
-      latLng.lat,
-      latLng.lng,
-      None
-    )
 
   def updateLocationForm(lf: LocationForm): (LocationForm, Boolean) =
     // TODO refactor using monads/cats later

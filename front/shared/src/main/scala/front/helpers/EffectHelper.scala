@@ -4,7 +4,8 @@ import tyrian.Cmd
 import tyrian.cmds.{FileReader, LocalStorage}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
-import front.model.{Location, Model, Msg}
+import front.model.{Model, Msg}
+import hello.{Location, Locations}
 
 object EffectHelper:
 
@@ -23,7 +24,14 @@ object EffectHelper:
         case Some(map) => Some(LeafletHelper.addLocation(map, loc))
         case None      => None
     }
-  def readImage(model: Model, idName: String = "image-upload"): Cmd[IO, Msg] =
+
+  def addLocationsToMap(model: Model, locs: Locations): Cmd.SideEffect[IO] =
+    Cmd.SideEffect {
+      val added = model.map match
+        case Some(map) => Some(locs.locations.foreach(LeafletHelper.addLocation(map, _)))
+        case None      => None
+    }
+  def readImageToLocationForm(model: Model, idName: String = "image-upload"): Cmd[IO, Msg] =
     FileReader.readText(idName) {
       case FileReader.Result.Error(msg) =>
         Msg.NoOp

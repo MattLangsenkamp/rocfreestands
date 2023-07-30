@@ -34,7 +34,7 @@ def newLocationPane: Model => Html[Msg] = (model: Model) =>
         `type` := "file",
         accept := "image/png, image/jpeg",
         id     := "image-upload",
-        onInput(_ => Msg.LoadImage)
+        onInput(_ => Msg.LoadImageToLocationForm)
       )
     ),
     previewImg,

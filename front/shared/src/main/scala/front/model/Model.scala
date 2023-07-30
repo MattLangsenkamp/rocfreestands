@@ -1,19 +1,19 @@
 package front.model
 
+import hello.Locations
 import typings.leaflet.mod as L
-
 
 case class Model(
     curPage: Routes,
     desc: String,
     footer: String,
-    locations: List[Location],
+    locations: Locations,
     map: Option[L.Map_],
     loginForm: LoginForm,
     authStatus: AuthStatus,
     newLocationStep: Option[NewLocationStep],
     newLocationForm: LocationForm,
-    newLocationMarker: Option[L.Marker_[Any]],
+    newLocationMarker: Option[L.Marker_[Any]]
 )
 
 case class LoginForm(
@@ -37,11 +37,11 @@ object Model:
       Routes.Locations,
       "help",
       "",
-      locations = (1 to 5).toList.map(_ => Location.randLocation()),
+      locations = Locations(List()),
       None,
       LoginForm(None, None, None, None),
       AuthStatus(None, false),
       None,
       Location.newLocationForm(),
-      None,
+      None
     )
