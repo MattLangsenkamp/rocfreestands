@@ -1,13 +1,16 @@
 package front.helpers
 
-import front.model.{LocationForm, Model, Msg}
+import front.model.LocationForm.{LocationForm, ValidatedLocationForm, validateLocationForm}
+import front.model.{Model, Msg}
 import hello.{Location, Locations}
+import org.scalajs.dom.HTMLElement
 import typings.leaflet.mod as L
 import typings.leaflet.mod.{IconOptions, Icon_, Marker_}
 import tyrian.Html.div
 import tyrian.Html
 import tyrian.Html.*
 import tyrian.Cmd.Emit
+import org.scalajs.dom.Element
 
 object LeafletHelper:
 
@@ -49,6 +52,7 @@ object LeafletHelper:
   def addLocations(map: L.Map_, locations: Locations): L.Map_ =
     locations.locations.foldRight(map)((l, m) => addLocation(m, l))
 
+  private def setContent2(location: Location): HTMLElement = ???
   // hover:text-indigo-200
   private def setContent(location: Location): String =
     val url =
@@ -57,9 +61,9 @@ object LeafletHelper:
        |       <div class=\"flex justify-around\">
        |           <img src=\"https://picsum.photos/200/300\" class=\"max-h-60 rounded\">
        |       </div>
-       |       <div class=\"text-lg w-64 flex font-semibold text-indigo-400 \">${location.name}</div>
-       |       <div class=\"\">${location.description}</div>
-       |       <div class=\"\">${location.address}</div>
+       |       <div class="text-lg w-64 flex font-semibold text-indigo-400">${location.name}</div>
+       |       <div>${location.description}</div>
+       |       <div>${location.address}</div>
        |       <a href="$url" target="_blank">
        |          <span
        |            title="google"
@@ -83,6 +87,12 @@ object LeafletHelper:
        |            </svg>
        |          </span>
        |        </a>
+       |        <button class="update-button" id="update-button" style="display: none;" onclick="
+       |        const updateLoc = new CustomEvent('update-requested', {
+       |          bubbles: true,
+       |          detail: ${location.id},
+       |           });
+       |        this.dispatchEvent(updateLoc);">update me!</button>
        |   </div>""".stripMargin
 
   def newLocationSelectionMarker(map: L.Map_): L.Marker_[Any] =
@@ -104,75 +114,3 @@ object LeafletHelper:
       .setTitle("New Location")
       .setIcon(icon)
     L.marker(map.getCenter(), opts)
-
-  def updateLocationForm(lf: LocationForm): (LocationForm, Boolean) =
-    // TODO refactor using monads/cats later
-    lf match
-      case LocationForm(Some(name), Some(description), Some(image), _, _, _) =>
-        (
-          lf.copy(nameErrorMessage = None, descriptionErrorMessage = None, imageErrorMessage = None),
-          true
-        )
-      case LocationForm(Some(name), None, None, _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = None,
-            descriptionErrorMessage = Some("Description cannot be empty"),
-            imageErrorMessage = Some("Image cannot be empty")
-          ),
-          false
-        )
-      case LocationForm(None, Some(description), None, _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = Some("Name cannot be empty"),
-            descriptionErrorMessage = None,
-            imageErrorMessage = Some("Image cannot be empty")
-          ),
-          false
-        )
-      case LocationForm(None, None, Some(image), _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = Some("Name cannot be empty"),
-            descriptionErrorMessage = Some("Description cannot be empty"),
-            imageErrorMessage = None
-          ),
-          false
-        )
-      case LocationForm(Some(name), Some(description), None, _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = None,
-            descriptionErrorMessage = None,
-            imageErrorMessage = Some("Image cannot be empty")
-          ),
-          false
-        )
-      case LocationForm(Some(name), None, Some(image), _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = None,
-            descriptionErrorMessage = Some("Description cannot be empty"),
-            imageErrorMessage = None
-          ),
-          false
-        )
-      case LocationForm(None, Some(description), Some(image), _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = Some("Name cannot be empty"),
-            descriptionErrorMessage = None,
-            imageErrorMessage = None
-          ),
-          false
-        )
-      case LocationForm(None, None, None, _, _, _) =>
-        (
-          lf.copy(
-            nameErrorMessage = Some("Name cannot be empty"),
-            descriptionErrorMessage = Some("Description cannot be empty"),
-            imageErrorMessage = Some("Image cannot be empty")
-          ),
-          false
-        )

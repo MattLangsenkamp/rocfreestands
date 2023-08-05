@@ -1,7 +1,9 @@
 package front.model
 
+import front.model.LocationForm.{LocationForm, LocationFormErrors}
 import hello.Locations
 import typings.leaflet.mod as L
+
 
 case class Model(
     curPage: Routes,
@@ -13,6 +15,7 @@ case class Model(
     authStatus: AuthStatus,
     newLocationStep: Option[NewLocationStep],
     newLocationForm: LocationForm,
+    newLocationFormErrors: LocationFormErrors,
     newLocationMarker: Option[L.Marker_[Any]]
 )
 
@@ -42,6 +45,7 @@ object Model:
       LoginForm(None, None, None, None),
       AuthStatus(None, false),
       None,
-      Location.newLocationForm(),
+      LocationForm(),
+      LocationFormErrors(),
       None
     )

@@ -12,7 +12,8 @@ lazy val front = crossProject(JSPlatform)
   .settings(
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
-        .withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("front", "core")))
+        .withModuleSplitStyle(ModuleSplitStyle.FewestModules)
+        .withSourceMap(false)
     },
     libraryDependencies ++= Seq(
       "io.indigoengine" %%% "tyrian-io"     % "0.7.1",

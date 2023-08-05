@@ -1,17 +1,20 @@
 package front
 
+import front.model.LocationForm.{LocationForm, LocationFormErrors, validateLocationForm}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
+import cats.data.Validated.*
 import front.components.*
 import front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
-import front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, Routes, Styles, Location as Loc}
+import front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, Routes, Styles}
 import org.scalajs.dom
-import org.scalajs.dom.{Event, document, html}
+import org.scalajs.dom.{MouseEvent, CustomEvent, document, html}
 import typings.leaflet.mod as L
 import tyrian.*
 import tyrian.Html.*
 import tyrian.cmds.*
 import hello.Locations
+
 import scala.concurrent.duration.*
 import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.annotation.*
@@ -65,6 +68,8 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
               (model, Cmd.None)
             case None => (model.copy(map = Some(LeafletHelper.init(model))), Cmd.None)
         case _ => (model, Cmd.None)
+    case Msg.ShowUpdateButtons =>
+      (model, EffectHelper.showUpdateButtons())
     case Msg.AddLocationsToMap(locations) =>
       (
         model.copy(locations = Locations(model.locations.locations ::: locations.locations)),
@@ -93,9 +98,10 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     case Msg.CheckIfLoggedIn =>
       (model, EffectHelper.getJWT(model))
     case Msg.SetJWT(jwt) =>
+      println("innnnn")
       (
         model.copy(authStatus = AuthStatus(jwt = Some(jwt), signedIn = true)),
-        EffectHelper.setJWT(model, jwt)
+        Cmd.Batch(EffectHelper.setJWT(model, jwt), EffectHelper.showUpdateButtons())
       )
     // TODO rename this command, to reflect that it is just the start of the adding process
     case Msg.AddNewLocation =>
@@ -115,9 +121,14 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       (model.copy(newLocationMarker = Some(m)), Cmd.None)
     case Msg.CompleteLocationSelection =>
       (
+        model,
+        HttpHelper.getLocationAddress(model)
+      )
+    case Msg.ResolvePlaceHolderAddress(address) =>
+      (
         model.copy(
           newLocationStep = Some(NewLocationStep.AddDetails),
-          newLocationForm = model.newLocationForm
+          newLocationForm = model.newLocationForm.copy(address = address)
         ),
         Cmd.None
       )
@@ -127,14 +138,13 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     case Msg.UpdateLocationForm(locationForm) =>
       (model.copy(newLocationForm = locationForm), Cmd.None)
     case Msg.SubmitNewLocationForm =>
-      val (nf, valid) = LeafletHelper.updateLocationForm(model.newLocationForm)
-      if (valid)
-        model.newLocationMarker match
-          case Some(marker) =>
-            (model, HttpHelper.createLocation(nf, marker))
-          case None => (model, Cmd.None)
-      else
-        (model.copy(newLocationForm = nf), Cmd.None)
+      validateLocationForm(model.newLocationForm) match
+        case Valid(nf) =>
+          model.newLocationMarker match
+            case Some(marker) =>
+              (model, HttpHelper.createLocation(nf, marker))
+            case None => (model, Cmd.None)
+        case Invalid(nef) => (model.copy(newLocationFormErrors = nef), Cmd.None)
     case Msg.CancelAddDetails =>
       (model.copy(newLocationStep = Some(NewLocationStep.LocationSelection)), Cmd.None)
     case Msg.OnAddLocationSuccess(loc) =>
@@ -142,12 +152,13 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       (
         model.copy(
           newLocationStep = None,
-          newLocationForm = Loc.newLocationForm()
+          newLocationForm = LocationForm()
         ),
         Cmd.Batch(removeMarkerSideEffect, Cmd.emit(Msg.AddLocationToMap(loc)))
       )
     case Msg.OnAddLocationError => ???
   def view(model: Model): Html[Msg] =
+
     val contents =
       model.curPage match
         case Routes.About     => aboutPage(model)
@@ -161,8 +172,19 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       footerComponent(model)
     )
 
+  def mousePosition(model: Model): Sub[IO, Msg] =
+    Sub.fromEvent("animalfound", document) { case e: CustomEvent =>
+      Option(Msg.NoOp)
+    }
+
   def subscriptions(model: Model): Sub[IO, Msg] =
     Sub.Batch(
+      mousePosition(model),
+      Sub.every[IO](0.2.second).map { _ =>
+        model.curPage match
+          case Routes.Locations => Msg.ShowUpdateButtons
+          case _ => Msg.NoOp
+      },
       Sub.every[IO](0.2.second).map { _ =>
         model.curPage match
           case Routes.Locations => Msg.RenderMap

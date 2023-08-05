@@ -6,6 +6,8 @@ import cats.effect.IO
 import cats.effect.IO.asyncForIO
 import front.model.{Model, Msg}
 import hello.{Location, Locations}
+import org.scalajs.dom.html.Div
+import org.scalajs.dom.document
 
 object EffectHelper:
 
@@ -20,23 +22,19 @@ object EffectHelper:
 
   def addNewPermanentLocation(model: Model, loc: Location): Cmd.SideEffect[IO] =
     Cmd.SideEffect {
-      val added = model.map match
-        case Some(map) => Some(LeafletHelper.addLocation(map, loc))
-        case None      => None
+      model.map.foreach(map => LeafletHelper.addLocation(map, loc))
     }
 
   def addLocationsToMap(model: Model, locs: Locations): Cmd.SideEffect[IO] =
     Cmd.SideEffect {
-      val added = model.map match
-        case Some(map) => Some(locs.locations.foreach(LeafletHelper.addLocation(map, _)))
-        case None      => None
+      model.map.foreach(map => locs.locations.foreach(LeafletHelper.addLocation(map, _)))
     }
   def readImageToLocationForm(model: Model, idName: String = "image-upload"): Cmd[IO, Msg] =
     FileReader.readText(idName) {
       case FileReader.Result.Error(msg) =>
         Msg.NoOp
       case FileReader.Result.File(name, path, contents) =>
-        Msg.UpdateLocationForm(model.newLocationForm.copy(image = Some(contents)))
+        Msg.UpdateLocationForm(model.newLocationForm.copy(image = contents))
     }
 
   def setJWT(model: Model, jwt: String, key: String = "jwt"): Cmd[IO, Msg] =
@@ -50,4 +48,15 @@ object EffectHelper:
       case Right(LocalStorage.Result.Found(value)) =>
         Msg.SetJWT(value)
       case Left(LocalStorage.Result.NotFound(e)) => Msg.NoOp
+    }
+
+  def showUpdateButtons(): Cmd[IO, Msg] =
+    println(document.firstElementChild.innerHTML)
+    val updateButtons = document.getElementsByTagName("button")
+    Cmd.SideEffect {
+      println("ahhhhhh")
+      println(updateButtons.length)
+      updateButtons.foreach(elem =>
+        println(elem)
+        elem.asInstanceOf[Div].style.display = "block")
     }

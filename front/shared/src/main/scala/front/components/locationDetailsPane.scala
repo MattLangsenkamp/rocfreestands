@@ -4,9 +4,8 @@ import front.model.{Model, Msg, Styles}
 import tyrian.Html
 import tyrian.Html.*
 import tyrian.syntax.*
-import tyrian.syntax.orEmpty
 
-def newLocationPane: Model => Html[Msg] = (model: Model) =>
+def locationDetalsPane: Model => Html[Msg] = (model: Model) =>
 
   val locationPaneStyles =
     """
