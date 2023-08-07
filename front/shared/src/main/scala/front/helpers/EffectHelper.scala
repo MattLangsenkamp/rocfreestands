@@ -51,12 +51,8 @@ object EffectHelper:
     }
 
   def showUpdateButtons(): Cmd[IO, Msg] =
-    println(document.firstElementChild.innerHTML)
-    val updateButtons = document.getElementsByTagName("button")
+    val updateButtons = document.getElementsByClassName("update-button")
     Cmd.SideEffect {
-      println("ahhhhhh")
-      println(updateButtons.length)
       updateButtons.foreach(elem =>
-        println(elem)
         elem.asInstanceOf[Div].style.display = "block")
     }

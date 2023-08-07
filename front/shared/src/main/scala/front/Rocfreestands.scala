@@ -173,7 +173,8 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     )
 
   def mousePosition(model: Model): Sub[IO, Msg] =
-    Sub.fromEvent("animalfound", document) { case e: CustomEvent =>
+    Sub.fromEvent("update-requested", document) { case e: CustomEvent =>
+      println(e.detail)
       Option(Msg.NoOp)
     }
 
