@@ -15,6 +15,7 @@ import org.http4s.implicits.uri
 import tyrian.Cmd
 import io.circe.generic.auto.*
 import org.http4s.circe.CirceEntityCodec.*
+import smithy4s.ByteArray
 object HttpHelper:
 
   private case class Address(display_name: String)
@@ -30,8 +31,14 @@ object HttpHelper:
     Cmd.Run {
       r.map { c =>
         val latLng = marker.getLatLng()
-        c.createLocation(nlf.address, nlf.name, nlf.description, latLng.lat, latLng.lng)
-          .map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
+        c.createLocation(
+          nlf.address,
+          nlf.name,
+          nlf.description,
+          latLng.lat,
+          latLng.lng,
+          ByteArray(nlf.image.getBytes)
+        ).map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
       }.getOrElse(IO.pure(Msg.NoOp))
     }
 

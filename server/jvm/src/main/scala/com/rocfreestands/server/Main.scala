@@ -7,9 +7,10 @@ import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.headers.Origin
 import org.http4s.server.middleware.CORS
-import smithy4s.Timestamp
+import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.DB
+
 import scala.util.Try
 object Main extends IOApp.Simple:
 
@@ -24,11 +25,12 @@ object Main extends IOApp.Simple:
         name: String,
         description: String,
         latitude: Double,
-        longitude: Double
+        longitude: Double,
+        image: ByteArray
     ): IO[Location] =
       IO.println("creating location") *>
         IO.blocking(
-          DB.addToLocs(address, name, description, latitude, longitude)
+          DB.addToLocs(address, name, description, latitude, longitude, image)
         )
 
     override def deleteLocation(uuid: String): IO[DeleteLocationOutput] =

@@ -54,6 +54,9 @@ structure LocationInput {
 
     @required
     longitude: Double
+
+    @required
+    image: Blob
 }
 
 structure Location {
@@ -74,6 +77,9 @@ structure Location {
 
     @required
     longitude: Double
+
+    @required
+    image: Blob
 
     @required
     creationDateTime: Timestamp

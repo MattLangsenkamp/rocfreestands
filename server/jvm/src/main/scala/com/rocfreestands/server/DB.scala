@@ -1,7 +1,7 @@
 package com.rocfreestands.server
 
 import com.rocfreestands.core.{Location, Locations}
-import smithy4s.Timestamp
+import smithy4s.{ByteArray, Timestamp}
 
 object DB:
 
@@ -14,6 +14,7 @@ object DB:
         "South Wedge Mission",
         43.1521 - 0.0675,
         -77.607649 - 0.0675,
+        ByteArray(Array()),
         Timestamp.nowUTC()
       ),
       Location(
@@ -23,6 +24,7 @@ object DB:
         "north wedge mission",
         43.1521 + 0.0675,
         -77.607649 + 0.0675,
+        ByteArray(Array()),
         Timestamp.apply(2021, 1, 2)
       )
     )
@@ -33,7 +35,8 @@ object DB:
       name: String,
       description: String,
       latitude: Double,
-      longitude: Double
+      longitude: Double,
+      image: ByteArray
   ): Location =
     val loc = Location(
       uuid = java.util.UUID.randomUUID.toString,
@@ -42,6 +45,7 @@ object DB:
       description = description,
       latitude = latitude,
       longitude = longitude,
+      image = image,
       creationDateTime = Timestamp.nowUTC()
     )
     locs = Locations(locs.locations ::: loc :: Nil)
