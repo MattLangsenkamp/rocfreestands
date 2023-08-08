@@ -2,7 +2,7 @@ package com.rocfreestands.server
 import alloy.SimpleRestJson
 import cats.effect.*
 import cats.implicits.*
-import hello.{DeleteLocationOutput, Location, LocationInput, Locations, LocationsService}
+import com.rocfreestands.core.{DeleteLocationOutput, Location, LocationInput, Locations, LocationsService}
 import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.headers.Origin

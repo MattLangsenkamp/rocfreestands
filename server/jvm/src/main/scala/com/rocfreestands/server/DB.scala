@@ -1,6 +1,6 @@
 package com.rocfreestands.server
 
-import hello.{Location, Locations}
+import com.rocfreestands.core.{Location, Locations}
 import smithy4s.Timestamp
 
 object DB:

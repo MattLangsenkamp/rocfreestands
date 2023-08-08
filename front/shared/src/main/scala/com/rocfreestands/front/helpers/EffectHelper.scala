@@ -1,11 +1,11 @@
-package front.helpers
+package com.rocfreestands.front.helpers
 
 import tyrian.Cmd
 import tyrian.cmds.{FileReader, LocalStorage}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
-import front.model.{MapLocation, Model, Msg}
-import hello.{Location, Locations}
+import com.rocfreestands.core.{Location, Locations}
+import com.rocfreestands.front.model.{MapLocation, Model, Msg}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.document
 import typings.leaflet.mod as L

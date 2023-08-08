@@ -1,6 +1,6 @@
 $version: "2"
 
-namespace hello
+namespace com.rocfreestands.core
 
 use alloy#simpleRestJson
 

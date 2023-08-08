@@ -1,22 +1,11 @@
-package front
+package com.rocfreestands.front
 
-import front.model.LocationForm.{LocationForm, LocationFormErrors, validateLocationForm}
+import com.rocfreestands.front.model.LocationForm.{LocationForm, LocationFormErrors, validateLocationForm}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
 import cats.data.Validated.*
-import front.components.*
-import front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
-import front.model.{
-  AuthStatus,
-  LoginForm,
-  MapLocation,
-  Model,
-  Msg,
-  NewLocationStep,
-  PopupModel,
-  Routes,
-  Styles
-}
+import com.rocfreestands.front.components.*
+import com.rocfreestands.front.model.{AuthStatus, LoginForm, MapLocation, Model, Msg, NewLocationStep, PopupModel, Routes, Styles}
 import org.scalajs.dom
 import org.scalajs.dom.{CustomEvent, MouseEvent, document, html}
 import typings.leaflet.mod as L
@@ -24,7 +13,9 @@ import tyrian.*
 import tyrian.Html.*
 import tyrian.cmds.*
 import tyrian.syntax.*
-import hello.Locations
+import com.rocfreestands.core.Locations
+import com.rocfreestands.front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
+import com.rocfreestands.front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, PopupModel, Routes, Styles}
 
 import scala.concurrent.duration.*
 import scala.scalajs.js.JSConverters.*

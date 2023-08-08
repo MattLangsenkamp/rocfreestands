@@ -1,14 +1,16 @@
-package front.helpers
+package com.rocfreestands.front.helpers
+
 import typings.leaflet.mod as L
 import alloy.SimpleRestJson
 import cats.effect.IO
-import front.model.LocationForm.LocationForm
+import com.rocfreestands.front.model.LocationForm.LocationForm
 import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dom.FetchClientBuilder
 import smithy4s.http4s.SimpleRestJsonBuilder
 import org.http4s.Uri
-import hello.{Location, LocationsService}
-import front.model.{LocationForm, Model, Msg}
+import com.rocfreestands.core.{Location, LocationsService}
+import com.rocfreestands.front.model.LocationForm.LocationForm
+import com.rocfreestands.front.model.{LocationForm, Model, Msg}
 import org.http4s.implicits.uri
 import tyrian.Cmd
 import io.circe.generic.auto.*

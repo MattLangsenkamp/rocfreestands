@@ -1,8 +1,6 @@
-package front.components
+package com.rocfreestands.front.components
 
-import front.model.Model
-import front.model.Msg
-import front.model.Routes
+import com.rocfreestands.front.model.{Model, Msg, Routes}
 import tyrian.Html
 import tyrian.Html._
 

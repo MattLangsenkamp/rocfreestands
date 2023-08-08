@@ -1,4 +1,5 @@
-package front.model
+package com.rocfreestands.front.model
+
 import cats.{Semigroup, data}
 import cats.syntax.all.*
 import cats.data.*

@@ -1,8 +1,7 @@
-package front.model
+package com.rocfreestands.front.model
 
-import front.model.LocationForm.{LocationForm, LocationFormErrors}
-import front.model.PopupModel
-import hello.Locations
+import com.rocfreestands.front.model.LocationForm.{LocationForm, LocationFormErrors}
+import com.rocfreestands.core.Locations
 import typings.leaflet.mod as L
 
 case class Model(

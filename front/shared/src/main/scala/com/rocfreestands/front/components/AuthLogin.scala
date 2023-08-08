@@ -1,6 +1,6 @@
-package front.components
+package com.rocfreestands.front.components
 
-import front.model.{LoginForm, Model, Msg, Routes, Styles}
+import com.rocfreestands.front.model.{LoginForm, Model, Msg, Routes, Styles}
 import tyrian.Html
 import tyrian.Html.*
 import tyrian.syntax.*

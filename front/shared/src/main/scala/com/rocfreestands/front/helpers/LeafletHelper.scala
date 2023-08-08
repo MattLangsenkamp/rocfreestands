@@ -1,8 +1,8 @@
-package front.helpers
+package com.rocfreestands.front.helpers
 
-import front.model.LocationForm.{LocationForm, ValidatedLocationForm, validateLocationForm}
-import front.model.{MapLocation, Model, Msg}
-import hello.{Location, Locations}
+import com.rocfreestands.front.model.LocationForm.{LocationForm, ValidatedLocationForm, validateLocationForm}
+import com.rocfreestands.core.{Location, Locations}
+import com.rocfreestands.front.model.{MapLocation, Model, Msg}
 import org.scalajs.dom.HTMLElement
 import typings.leaflet.mod as L
 import typings.leaflet.mod.{IconOptions, Icon_, Marker_}

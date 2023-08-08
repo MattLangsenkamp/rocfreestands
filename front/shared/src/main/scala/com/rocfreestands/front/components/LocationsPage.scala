@@ -1,6 +1,6 @@
-package front.components
+package com.rocfreestands.front.components
 
-import front.model.{Model, Msg, NewLocationStep, Styles}
+import com.rocfreestands.front.model.{Model, Msg, NewLocationStep, Styles}
 import tyrian.{Cmd, Html}
 import tyrian.Html.*
 import tyrian.syntax.*
