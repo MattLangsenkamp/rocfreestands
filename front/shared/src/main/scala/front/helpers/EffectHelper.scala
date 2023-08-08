@@ -4,10 +4,11 @@ import tyrian.Cmd
 import tyrian.cmds.{FileReader, LocalStorage}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
-import front.model.{Model, Msg}
+import front.model.{MapLocation, Model, Msg}
 import hello.{Location, Locations}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.document
+import typings.leaflet.mod as L
 
 object EffectHelper:
 
@@ -20,14 +21,22 @@ object EffectHelper:
           None
     }
 
-  def addNewPermanentLocation(model: Model, loc: Location): Cmd.SideEffect[IO] =
+  def removeLocationMarker(model: Model, uuid: String): Cmd[IO, Msg] =
+    Cmd.emit {
+      (for
+        ml  <- model.locations.find(_.location.uuid == uuid)
+        map <- model.map
+      yield ml.marker.removeFrom(map)).map(_ => Msg.RemoveMapLocationFromModel(uuid)).getOrElse(Msg.NoOp)
+    }
+
+  def addNewPermanentLocation(model: Model, loc: MapLocation): Cmd.SideEffect[IO] =
     Cmd.SideEffect {
       model.map.foreach(map => LeafletHelper.addLocation(map, loc))
     }
 
-  def addLocationsToMap(model: Model, locs: Locations): Cmd.SideEffect[IO] =
+  def addLocationsToMap(model: Model, locs: List[MapLocation]): Cmd.SideEffect[IO] =
     Cmd.SideEffect {
-      model.map.foreach(map => locs.locations.foreach(LeafletHelper.addLocation(map, _)))
+      model.map.foreach(map => LeafletHelper.addLocations(map, locs))
     }
   def readImageToLocationForm(model: Model, idName: String = "image-upload"): Cmd[IO, Msg] =
     FileReader.readText(idName) {
@@ -53,6 +62,5 @@ object EffectHelper:
   def showUpdateButtons(): Cmd[IO, Msg] =
     val updateButtons = document.getElementsByClassName("update-button")
     Cmd.SideEffect {
-      updateButtons.foreach(elem =>
-        elem.asInstanceOf[Div].style.display = "block")
+      updateButtons.foreach(elem => elem.asInstanceOf[Div].style.display = "block")
     }

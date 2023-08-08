@@ -8,7 +8,7 @@ object DB:
   var locs: Locations = Locations(
     List(
       Location(
-        1,
+        java.util.UUID.randomUUID.toString,
         "South",
         "South Wedge",
         "South Wedge Mission",
@@ -17,7 +17,7 @@ object DB:
         Timestamp.nowUTC()
       ),
       Location(
-        2,
+        java.util.UUID.randomUUID.toString,
         "north",
         "north wedge",
         "north wedge mission",
@@ -36,7 +36,7 @@ object DB:
       longitude: Double
   ): Location =
     val loc = Location(
-      id = locs.locations.length + 1,
+      uuid = java.util.UUID.randomUUID.toString,
       address = address,
       name = name,
       description = description,
@@ -46,3 +46,8 @@ object DB:
     )
     locs = Locations(locs.locations ::: loc :: Nil)
     loc
+
+  def deleteLoc(uuid: String): Option[Location] =
+    val (del, keep) = locs.locations.partition(_.uuid == uuid)
+    locs = Locations(locations = keep)
+    del.headOption

@@ -1,22 +1,23 @@
 package front.model
 
 import front.model.LocationForm.{LocationForm, LocationFormErrors}
+import front.model.PopupModel
 import hello.Locations
 import typings.leaflet.mod as L
-
 
 case class Model(
     curPage: Routes,
     desc: String,
     footer: String,
-    locations: Locations,
+    locations: List[MapLocation],
     map: Option[L.Map_],
     loginForm: LoginForm,
     authStatus: AuthStatus,
     newLocationStep: Option[NewLocationStep],
     newLocationForm: LocationForm,
     newLocationFormErrors: LocationFormErrors,
-    newLocationMarker: Option[L.Marker_[Any]]
+    newLocationMarker: Option[L.Marker_[Any]],
+    popupModel: Option[PopupModel]
 )
 
 case class LoginForm(
@@ -40,12 +41,12 @@ object Model:
       Routes.Locations,
       "help",
       "",
-      locations = Locations(List()),
+      locations = List(),
       None,
       LoginForm(None, None, None, None),
       AuthStatus(None, false),
       None,
       LocationForm(),
       LocationFormErrors(),
-      None
-    )
+      None,
+      None    )

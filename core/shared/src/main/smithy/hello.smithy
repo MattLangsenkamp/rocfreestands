@@ -6,7 +6,7 @@ use alloy#simpleRestJson
 
 @simpleRestJson
 service LocationsService {
-    operations: [GetLocations, CreateLocation]
+    operations: [GetLocations, CreateLocation, DeleteLocation]
 }
 
 @http(method: "GET", uri: "/locations")
@@ -22,6 +22,21 @@ operation CreateLocation {
     input: LocationInput
 
     output: Location
+}
+
+@http(method: "DELETE", uri: "/location/{uuid}")
+operation DeleteLocation {
+
+    input:= {
+        @required
+        @httpLabel
+        uuid: String
+    }
+
+    output:= {
+        @required
+        message: String
+    }
 }
 
 structure LocationInput {
@@ -43,7 +58,7 @@ structure LocationInput {
 
 structure Location {
     @required
-    id: Integer
+    uuid: String
 
     @required
     address: String

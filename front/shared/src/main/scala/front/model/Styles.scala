@@ -30,8 +30,8 @@ object Styles:
 
   val locationSClasses: String =
     "p-2 pb-12 m-auto max-w-m md:max-w-3xl lg:max-w-5xl xl:max-w-7xl h-56 text-red-600"
-    
-  val inputFormClasses: String = 
+
+  val inputFormClasses: String =
     "p-2 sm:flex w-full focus:outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300"
 
   val mapStyle: Attr[Nothing] =
@@ -43,5 +43,19 @@ object Styles:
   val vh65Style: Attr[Nothing] =
     style("height", "65vh")
 
-  val vhStyle: Int => Attr[Nothing] = i =>
-    style("max-height", s"${i}vh")
+  val vhStyle: Int => Attr[Nothing] = i => style("max-height", s"${i}vh")
+
+  val popupStyle: Attr[Nothing] =
+    styles(
+      "position"         -> "absolute",
+      "top"              -> "47.5%",
+      "left"             -> "47.5%",
+      "right"            -> "47.5%",
+      "z-index"          -> "1001",
+      "width"            -> "10%",
+      "height"           -> "10%",
+      "text-align"       -> "center",
+      "background-color" -> "white"
+    )
+
+  val popupClasses: String = "p-2 rounded text-gray-500 border-indigo-500 border"
