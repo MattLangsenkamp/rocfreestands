@@ -26,7 +26,7 @@ def locationsPage: Model => Html[Msg] = (model: Model) =>
             )
       case None =>
         div(Styles.z1000Style, cls := "absolute top-5 right-5")(
-          mapButton("Add New Location", Msg.AddNewLocation)(model)
+          mapButton("Add New Location", Msg.BeginAddNewLocation)(model)
         ))
   else
     None

@@ -1,7 +1,7 @@
 package front.helpers
 
 import front.model.LocationForm.{LocationForm, ValidatedLocationForm, validateLocationForm}
-import front.model.{Model, Msg}
+import front.model.{MapLocation, Model, Msg}
 import hello.{Location, Locations}
 import org.scalajs.dom.HTMLElement
 import typings.leaflet.mod as L
@@ -39,22 +39,25 @@ object LeafletHelper:
 
     addLocations(m, model.locations)
 
-
-  def addLocation(map: L.Map_, location: Location): L.Map_ =
-    val p = L.popup(L.PopupOptions().setContent(setContent(location)))
-    L.marker(
-      L.LatLngLiteral(location.latitude, location.longitude),
-      L.MarkerOptions().setTitle(location.name)
-    ).bindPopup(p)
-      .addTo(map)
+  def addLocation(map: L.Map_, location: MapLocation): L.Map_ =
+    location.marker.addTo(map)
     map
 
-  def addLocations(map: L.Map_, locations: Locations): L.Map_ =
-    locations.locations.foldRight(map)((l, m) => addLocation(m, l))
+  def addLocations(map: L.Map_, locations: List[MapLocation]): L.Map_ =
+    locations.foldRight(map)((l, m) => addLocation(m, l))
 
-  private def setContent2(location: Location): HTMLElement = ???
-  // hover:text-indigo-200
+  def locationToMapLocation(location: Location): MapLocation =
+    val p = L.popup(L.PopupOptions().setContent(setContent(location)))
+    val marker = L
+      .marker(
+        L.LatLngLiteral(location.latitude, location.longitude),
+        L.MarkerOptions().setTitle(location.name)
+      )
+      .bindPopup(p)
+    MapLocation(location, marker)
+
   private def setContent(location: Location): String =
+    println(location.uuid)
     val url =
       f"https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}"
     f"""<div class=\"inline-block break-words w-64\">
@@ -90,8 +93,9 @@ object LeafletHelper:
        |        <button class="update-button" id="update-button" style="display: none;" onclick="
        |        const updateLoc = new CustomEvent('update-requested', {
        |          bubbles: true,
-       |          detail: ${location.id},
-       |           });
+       |          detail: '${location.uuid}',
+       |           },
+       |           );
        |        this.dispatchEvent(updateLoc);">update me!</button>
        |   </div>""".stripMargin
 

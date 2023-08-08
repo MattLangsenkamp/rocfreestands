@@ -29,7 +29,7 @@ object HttpHelper:
       r.map { c =>
         val latLng = marker.getLatLng()
         c.createLocation(nlf.address, nlf.name, nlf.description, latLng.lat, latLng.lng)
-          .map(l => Msg.OnAddLocationSuccess(l))
+          .map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
       }.getOrElse(IO.pure(Msg.NoOp))
     }
 
@@ -38,22 +38,28 @@ object HttpHelper:
       case Left(_) =>
         IO.pure(Msg.NoOp)
       case Right(c) =>
-        c.getLocations().map(l => Msg.AddLocationsToMap(l))
+        c.getLocations()
+          .map(l => Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
+
+    Cmd.Run(io)
+
+  def deleteLocation(uuid: String): Cmd[IO, Msg] =
+    val io = r
+      .map {
+        _.deleteLocation(uuid).map(resp => Msg.OnDeleteLocationSuccess(resp.message, uuid))
+      }
+      .getOrElse(IO.pure(Msg.OnDeleteLocationFailure("failed to instantiate client")))
 
     Cmd.Run(io)
 
   def getLocationAddress(model: Model): Cmd[IO, Msg] =
     Cmd.Run {
-      println("ok!")
       model.newLocationMarker
         .map { marker =>
-          println("yea!")
           val uri =
             f"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${marker.getLatLng().lat}&lon=${marker.getLatLng().lng}"
-          println(uri)
           for
             address <- client.expect[Address](uri).attempt
-            _       <- IO.println(address)
             msg <- IO {
               address
                 .map(addr => Msg.ResolvePlaceHolderAddress(addr.display_name))

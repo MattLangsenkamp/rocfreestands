@@ -6,13 +6,24 @@ import cats.effect.IO.asyncForIO
 import cats.data.Validated.*
 import front.components.*
 import front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
-import front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, Routes, Styles}
+import front.model.{
+  AuthStatus,
+  LoginForm,
+  MapLocation,
+  Model,
+  Msg,
+  NewLocationStep,
+  PopupModel,
+  Routes,
+  Styles
+}
 import org.scalajs.dom
-import org.scalajs.dom.{MouseEvent, CustomEvent, document, html}
+import org.scalajs.dom.{CustomEvent, MouseEvent, document, html}
 import typings.leaflet.mod as L
 import tyrian.*
 import tyrian.Html.*
 import tyrian.cmds.*
+import tyrian.syntax.*
 import hello.Locations
 
 import scala.concurrent.duration.*
@@ -72,14 +83,17 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       (model, EffectHelper.showUpdateButtons())
     case Msg.AddLocationsToMap(locations) =>
       (
-        model.copy(locations = Locations(model.locations.locations ::: locations.locations)),
+        model.copy(locations = model.locations ::: locations),
         EffectHelper.addLocationsToMap(model, locations)
       )
     case Msg.AddLocationToMap(location) =>
-      (
-        model.copy(locations = Locations(model.locations.locations ::: location :: Nil)),
+      println("nice")
+      val m = (
+        model.copy(locations = model.locations ::: location :: Nil),
         EffectHelper.addNewPermanentLocation(model, location)
       )
+      println(m._1.locations)
+      m
     case Msg.LoadImageToLocationForm =>
       (model, EffectHelper.readImageToLocationForm(model))
     case Msg.UpdateLoginForm(f) =>
@@ -103,8 +117,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
         model.copy(authStatus = AuthStatus(jwt = Some(jwt), signedIn = true)),
         Cmd.Batch(EffectHelper.setJWT(model, jwt), EffectHelper.showUpdateButtons())
       )
-    // TODO rename this command, to reflect that it is just the start of the adding process
-    case Msg.AddNewLocation =>
+    case Msg.BeginAddNewLocation =>
       val nextMessage = model.map match
         case Some(map) =>
           Cmd.emit {
@@ -157,6 +170,86 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
         Cmd.Batch(removeMarkerSideEffect, Cmd.emit(Msg.AddLocationToMap(loc)))
       )
     case Msg.OnAddLocationError => ???
+    case Msg.ShowPopup(popupModel) =>
+      (
+        model.copy(popupModel = Some(popupModel)),
+        Cmd.None
+      )
+    case Msg.ClosePopup =>
+      (
+        model.copy(popupModel = None),
+        Cmd.None
+      )
+    case Msg.ProposeDeleteLocation(uuid) =>
+      val loc = model.locations.find(_.location.uuid == uuid)
+      loc
+        .map { l =>
+          (
+            model.copy(
+              popupModel = Some(
+                PopupModel(
+                  f"Do You Want To Delete ${l.location.name}",
+                  "Delete",
+                  Msg.TryDeleteLocation(l)
+                )
+              )
+            ),
+            Cmd.None
+          )
+        }
+        .getOrElse(
+          (
+            model.copy(
+              popupModel = Some(
+                PopupModel(
+                  f"Something Went Wrong Could Not Delete Location With ID: $uuid",
+                  "Ok",
+                  Msg.ClosePopup
+                )
+              )
+            ),
+            Cmd.None
+          )
+        )
+
+    case Msg.TryDeleteLocation(mp) =>
+      (
+        model,
+        HttpHelper.deleteLocation(mp.location.uuid)
+      )
+    case Msg.OnDeleteLocationFailure(message) =>
+      (
+        model.copy(
+          popupModel = Some(
+            PopupModel(
+              message,
+              "Ok",
+              Msg.ClosePopup
+            )
+          )
+        ),
+        Cmd.None
+      )
+    case Msg.OnDeleteLocationSuccess(message, uuid) =>
+      (
+        model.copy(
+          popupModel = Some(
+            PopupModel(
+              message,
+              "Ok",
+              Msg.ClosePopup
+            )
+          )
+        ),
+        EffectHelper.removeLocationMarker(model, uuid)
+      )
+    case Msg.RemoveMapLocationFromModel(uuid) =>
+      (
+        model.copy(
+          locations = model.locations.filter(_.location.uuid != uuid)
+        ),
+        Cmd.None
+      )
   def view(model: Model): Html[Msg] =
 
     val contents =
@@ -167,24 +260,24 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
 
     // top level container
     div(cls := Styles.containerClasses, id := "container")(
+      model.popupModel.map(popup).orEmpty,
       headerComponent(model),
       contents,
       footerComponent(model)
     )
 
-  def mousePosition(model: Model): Sub[IO, Msg] =
+  def catchDeleteReq(model: Model): Sub[IO, Msg] =
     Sub.fromEvent("update-requested", document) { case e: CustomEvent =>
-      println(e.detail)
-      Option(Msg.NoOp)
+      Option(Msg.ProposeDeleteLocation(e.detail.asInstanceOf[String]))
     }
 
   def subscriptions(model: Model): Sub[IO, Msg] =
     Sub.Batch(
-      mousePosition(model),
+      catchDeleteReq(model),
       Sub.every[IO](0.2.second).map { _ =>
         model.curPage match
           case Routes.Locations => Msg.ShowUpdateButtons
-          case _ => Msg.NoOp
+          case _                => Msg.NoOp
       },
       Sub.every[IO](0.2.second).map { _ =>
         model.curPage match
