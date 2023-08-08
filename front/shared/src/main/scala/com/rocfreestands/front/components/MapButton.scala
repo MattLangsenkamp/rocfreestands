@@ -1,6 +1,6 @@
-package front.components
+package com.rocfreestands.front.components
 
-import front.model.{Model, Msg, Styles}
+import com.rocfreestands.front.model.{Model, Msg, Styles}
 import tyrian.Html
 import tyrian.Html.*
 

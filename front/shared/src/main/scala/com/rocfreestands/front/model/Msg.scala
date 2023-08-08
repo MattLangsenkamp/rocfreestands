@@ -1,9 +1,9 @@
-package front.model
+package com.rocfreestands.front.model
 
-import hello.{Locations, Location}
+import com.rocfreestands.core.{Location, Locations}
+import com.rocfreestands.front.model.LocationForm.LocationForm
 import typings.leaflet.mod as L
-import front.model.LocationForm.{LocationForm, LocationFormErrors}
-import front.model.PopupModel
+import com.rocfreestands.front.model.LocationForm.{LocationForm, LocationFormErrors}
 
 enum Msg:
   case NoOp

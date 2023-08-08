@@ -1,8 +1,8 @@
-package front.helpers
+package com.rocfreestands.front.helpers
 
 import tyrian.cmds.*
 import cats.effect.IO
-import front.model.{LoginForm, Msg}
+import com.rocfreestands.front.model.{LoginForm, Msg}
 import tyrian.Cmd
 object AuthHelper:
 

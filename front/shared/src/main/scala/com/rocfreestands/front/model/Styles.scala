@@ -1,4 +1,4 @@
-package front.model
+package com.rocfreestands.front.model
 
 import tyrian.Attr
 import tyrian.Html.style
