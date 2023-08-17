@@ -12,6 +12,7 @@ import tyrian.Html.*
 import tyrian.Cmd.Emit
 import org.scalajs.dom.Element
 
+
 object LeafletHelper:
 
   val TileLayerUri =
@@ -62,7 +63,7 @@ object LeafletHelper:
       f"https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}"
     f"""<div class=\"inline-block break-words w-64\">
        |       <div class=\"flex justify-around\">
-       |           <img src=\"https://picsum.photos/200/300\" class=\"max-h-60 rounded\">
+       |           <img src=\"${location.image}\" class=\"max-h-60 rounded\">
        |       </div>
        |       <div class="text-lg w-64 flex font-semibold text-indigo-400">${location.name}</div>
        |       <div>${location.description}</div>

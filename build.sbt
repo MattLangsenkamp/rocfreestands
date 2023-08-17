@@ -48,7 +48,10 @@ lazy val server = crossProject(JVMPlatform)
     libraryDependencies ++= Seq(
       "org.scalameta"                %% "munit"                   % "0.7.29" % Test,
       "com.disneystreaming.smithy4s" %% "smithy4s-http4s-swagger" % smithy4sVersion.value,
-      "org.http4s"                   %% "http4s-ember-server"     % "0.23.18"
+      "org.http4s"                   %% "http4s-ember-server"     % "0.23.18",
+      "org.tpolecat"                 %% "skunk-core"              % "0.6.0",
+      "com.github.geirolz"           %% "fly4s-core"              % "0.0.18",
+      "org.postgresql"                % "postgresql"              % "42.6.0"
     ),
     fork := true
   )

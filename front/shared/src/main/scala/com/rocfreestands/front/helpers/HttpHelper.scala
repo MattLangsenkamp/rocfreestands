@@ -37,7 +37,7 @@ object HttpHelper:
           nlf.description,
           latLng.lat,
           latLng.lng,
-          ByteArray(nlf.image.getBytes)
+          nlf.image,
         ).map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
       }.getOrElse(IO.pure(Msg.NoOp))
     }
