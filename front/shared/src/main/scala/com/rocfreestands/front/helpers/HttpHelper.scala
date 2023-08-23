@@ -22,7 +22,7 @@ object HttpHelper:
 
   private val client = FetchClientBuilder[IO].create
   private val r =
-    SimpleRestJsonBuilder(LocationsService).client(client).uri(uri"http://127.0.0.1:8080/").use
+    SimpleRestJsonBuilder(LocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
 
   def createLocation(
       nlf: LocationForm,
