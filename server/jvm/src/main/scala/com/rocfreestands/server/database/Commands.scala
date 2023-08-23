@@ -8,6 +8,9 @@ import com.rocfreestands.server.database.Codecs.locationCodec
 
 object Commands:
 
-  private val insertOne: Command[Location] =
+  val createLocation: Command[Location] =
     sql"INSERT INTO location VALUES ($locationCodec)".command
       .to[Location]
+
+  val deleteLocation: Command[String] =
+    sql"DELETE FROM location WHERE uuid=$varchar".command

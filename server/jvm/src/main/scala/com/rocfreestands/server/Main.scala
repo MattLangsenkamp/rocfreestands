@@ -17,14 +17,13 @@ import org.http4s.headers.Origin
 import org.http4s.server.middleware.CORS
 import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
-import com.rocfreestands.server.DB
-import com.rocfreestands.server.database.FlywayConfig
-import com.rocfreestands.server.services.LocationServiceImpl
+import com.rocfreestands.server.database.{FlywayConfig, SkunkSession}
+import com.rocfreestands.server.services.{LocationsRepository, ObjectStore, fromPath, fromSession, make}
 import fly4s.core.*
 import fly4s.core.data.{
   BaselineResult,
-  MigrateResult,
   Fly4sConfig,
+  MigrateResult,
   ValidatedMigrateResult,
   Location as MigrationLocation
 }
@@ -54,12 +53,6 @@ object Main extends IOApp.Simple:
     )
     .evalTap(_.baseline)
     .evalMap(_.migrate)
-  /*.evalTap(r =>
-      IO.println(r match
-        case Validated.Valid(a)   => a.success.toString
-        case Validated.Invalid(e) => e.head.errorDetails.errorMessage
-      )
-    )*/
 
   private object Routes:
 
@@ -68,37 +61,36 @@ object Main extends IOApp.Simple:
         Set(
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8080)),
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(5173)),
-          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8080))
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8080)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8081))
         )
       )
 
-    private def makeRoutes(db: DB, im: ImageWriter): Resource[IO, HttpRoutes[IO]] =
-      SimpleRestJsonBuilder.routes(LocationServiceImpl(db, im)).resource
+    private def makeRoutes(
+        lr: LocationsRepository[IO],
+        os: ObjectStore[IO]
+    ): Resource[IO, HttpRoutes[IO]] =
+      SimpleRestJsonBuilder.routes(make(lr, os)).resource
 
     private val docs: HttpRoutes[IO] =
       smithy4s.http4s.swagger.docs[IO](LocationsService)
 
-    def all(db: DB, im: ImageWriter): Resource[IO, HttpRoutes[IO]] =
-      makeRoutes(db, im).map(_ <+> docs).map(policy.apply(_))
+    def all(lr: LocationsRepository[IO], os: ObjectStore[IO]): Resource[IO, HttpRoutes[IO]] =
+      makeRoutes(lr, os).map(_ <+> docs).map(policy.apply(_))
 
-  def createFolderIfNotExist(path: Path): IO[Path] =
+  private def createFolderIfNotExist(path: Path): IO[Path] =
     if Files.exists(path) then IO(path)
     else IO.blocking(Files.createDirectory(path))
 
-  def createDB: Resource[IO, DB] = Resource.make(IO(new DB()))(db => IO.unit)
-
-  def createObjectStore(path: Path): Resource[IO, ImageWriter] =
-    Resource.make {
-      for p <- createFolderIfNotExist(path)
-      yield ImageWriter(p)
-    }(im => IO.unit)
-
   def run: IO[Unit] =
     val s = for
-      flyway <- fly4sRes
-      db     <- createDB
-      im     <- createObjectStore(Path.of("pictures"))
-      routes <- Routes.all(db, im)
+      flyway         <- fly4sRes
+      psqlConnection <- SkunkSession.skunkSession
+      psqlSession    <- psqlConnection
+      p              <- createFolderIfNotExist(Path.of("pictures")).toResource
+      im             <- fromPath(p).toResource
+      db             <- fromSession(psqlSession).toResource
+      routes         <- Routes.all(db, im)
       srv <- EmberServerBuilder
         .default[IO]
         .withPort(port"8081")
@@ -106,6 +98,4 @@ object Main extends IOApp.Simple:
         .build
     yield srv
 
-    s
-      .evalMap(srv => IO.println(f"server running at ${srv.addressIp4s}"))
-      .useForever
+    s.evalMap(srv => IO.println(f"server running at ${srv.addressIp4s}")).useForever
