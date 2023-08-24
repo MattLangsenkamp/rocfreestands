@@ -11,13 +11,14 @@ import com.rocfreestands.core.{
   Locations,
   LocationsService
 }
+import com.rocfreestands.server.config.{FlywayConfig, ServerConfig}
 import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.headers.Origin
 import org.http4s.server.middleware.CORS
 import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
-import com.rocfreestands.server.database.{FlywayConfig, SkunkSession}
+import com.rocfreestands.server.database.{Flyway, SkunkSession}
 import com.rocfreestands.server.services.{LocationsRepository, ObjectStore, fromPath, fromSession, make}
 import fly4s.core.*
 import fly4s.core.data.{
@@ -28,7 +29,6 @@ import fly4s.core.data.{
   Location as MigrationLocation
 }
 import fly4s.implicits.*
-
 import java.nio.file.{Files, Path}
 import scala.util.Try
 object Main extends IOApp.Simple:
@@ -41,18 +41,15 @@ object Main extends IOApp.Simple:
     migrationsLocations = List("db")
   )
 
-  val fly4sRes: Resource[IO, MigrateResult] = Fly4s
-    .make[IO](
-      url = dbConfig.url,
-      user = dbConfig.user,
-      password = dbConfig.password,
-      config = Fly4sConfig(
-        table = dbConfig.migrationsTable,
-        locations = dbConfig.migrationsLocations.map(s => MigrationLocation(s))
-      )
-    )
-    .evalTap(_.baseline)
-    .evalMap(_.migrate)
+  private val serverConfig: ServerConfig = ServerConfig(
+    username = "admin",
+    password = "admin",
+    psqlUsername = "rocfreestands",
+    psqlPassword = "password",
+    picturePath = "pictures",
+    port = "8081"
+  )
+
 
   private object Routes:
 
@@ -84,7 +81,7 @@ object Main extends IOApp.Simple:
 
   def run: IO[Unit] =
     val s = for
-      flyway         <- fly4sRes
+      _              <- Flyway.runFlywayMigration(dbConfig)
       psqlConnection <- SkunkSession.skunkSession
       psqlSession    <- psqlConnection
       p              <- createFolderIfNotExist(Path.of("pictures")).toResource
@@ -93,7 +90,7 @@ object Main extends IOApp.Simple:
       routes         <- Routes.all(db, im)
       srv <- EmberServerBuilder
         .default[IO]
-        .withPort(port"8081")
+        .withPort(Port.fromString(serverConfig.port).get)
         .withHttpApp(routes.orNotFound)
         .build
     yield srv
