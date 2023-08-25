@@ -13,6 +13,7 @@ import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware
 
 import java.time.Instant
+import scala.util.{Failure, Success}
 
 object AuthServiceImpl:
 
@@ -35,10 +36,25 @@ object AuthServiceImpl:
     private def makeToken(username: String) =
       JwtCirce.encode(makeClaim(username), config.jwtSecretKey, algo)
 
+    override def refresh(cookie: String): IO[AuthResponse] =
+      JwtCirce.decode(cookie) match
+        case Failure(_) => IO(AuthResponse("Failed to refresh cookie"))
+        case Success(claim) =>
+          decode[AuthPayload](claim.content) match
+            case Right(payload) =>
+              IO.pure(
+                if payload.user == config.username && claim.expiration.exists(claimExp =>
+                    Instant.now.getEpochSecond > claimExp
+                  )
+                then AuthResponse("Refresh Successful", cookie = Some(makeToken(username)))
+                else AuthResponse("Failed to refresh cookie")
+              )
+            case Left(_) => IO(AuthResponse("Failed to refresh cookie"))
+
     override def login(username: String, password: String): IO[AuthResponse] = IO(
       if username.equals(config.username) && password.equals(config.password) then
-        AuthResponse(makeToken(username))
-      else AuthResponse("")
+        AuthResponse(message = "Login Successful", cookie = Some(makeToken(username)))
+      else AuthResponse("Login Failed")
     )
   }
 
