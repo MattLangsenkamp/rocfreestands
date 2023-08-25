@@ -80,8 +80,8 @@ object Main extends IOApp.Simple:
     ): Resource[IO, HttpRoutes[IO]] =
       for
         locRoutes    <- SimpleRestJsonBuilder.routes(makeLocationService(lr, os)).resource
-        authedRoutes <- SimpleRestJsonBuilder.routes(fromServerConfig(c)).resource
-      yield locRoutes <+> authedRoutes
+        authRoutes <- SimpleRestJsonBuilder.routes(fromServerConfig(c)).resource
+      yield locRoutes <+> authRoutes
 
     private val docs: HttpRoutes[IO] =
       smithy4s.http4s.swagger.docs[IO](LocationsService) <+> smithy4s.http4s.swagger

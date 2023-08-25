@@ -46,7 +46,7 @@ object AuthServiceImpl:
                 if payload.user == config.username && claim.expiration.exists(claimExp =>
                     Instant.now.getEpochSecond > claimExp
                   )
-                then AuthResponse("Refresh Successful", cookie = Some(makeToken(username)))
+                then AuthResponse("Refresh Successful", cookie = Some(makeToken(payload.user)))
                 else AuthResponse("Failed to refresh cookie")
               )
             case Left(_) => IO(AuthResponse("Failed to refresh cookie"))
