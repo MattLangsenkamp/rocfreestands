@@ -8,7 +8,7 @@ import skunk.data.Completion
 import skunk.{Session, SqlState, Void}
 import smithy4s.Timestamp
 
-def make(lr: LocationsRepository[IO], os: ObjectStore[IO]): LocationsService[IO] =
+def makeLocationService(lr: LocationsRepository[IO], os: ObjectStore[IO]): LocationsService[IO] =
   new LocationsService[IO]:
     override def getLocations(): IO[Locations] =
       for

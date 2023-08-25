@@ -6,12 +6,18 @@ use alloy#simpleRestJson
 
 @simpleRestJson
 service AuthService {
-    operations: [Login]
+    operations: [Login, Refresh]
 }
 
 @http(method: "POST", uri: "/login")
 operation Login {
     input : AuthRequest
+    output: AuthResponse
+}
+
+@http(method: "POST", uri: "/refresh")
+operation Refresh {
+    input : AuthRefresh
     output: AuthResponse
 }
 
@@ -23,7 +29,16 @@ structure AuthRequest {
     password: String
 }
 
-structure AuthResponse {
+structure AuthRefresh {
     @required
-    jwt: String
+    @httpHeader("Cookie")
+    cookie: String
+}
+
+structure AuthResponse {
+    @httpHeader("Set-Cookie")
+    cookie: String,
+    
+    @required
+    message: String
 }

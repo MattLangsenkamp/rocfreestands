@@ -5,6 +5,7 @@ import cats.effect.*
 import cats.implicits.*
 import com.comcast.ip4s.*
 import com.rocfreestands.core.{
+  AuthService,
   DeleteLocationOutput,
   Location,
   LocationInput,
@@ -19,7 +20,15 @@ import org.http4s.server.middleware.CORS
 import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.database.{Flyway, SkunkSession}
-import com.rocfreestands.server.services.{LocationsRepository, ObjectStore, fromPath, fromSession, make}
+import com.rocfreestands.server.services.{
+  AuthServiceImpl,
+  LocationsRepository,
+  ObjectStore,
+  fromPath,
+  fromSession,
+  makeLocationService
+}
+import com.rocfreestands.server.services.AuthServiceImpl.fromServerConfig
 import fly4s.core.*
 import fly4s.core.data.{
   BaselineResult,
@@ -29,6 +38,7 @@ import fly4s.core.data.{
   Location as MigrationLocation
 }
 import fly4s.implicits.*
+
 import java.nio.file.{Files, Path}
 import scala.util.Try
 object Main extends IOApp.Simple:
@@ -47,9 +57,9 @@ object Main extends IOApp.Simple:
     psqlUsername = "rocfreestands",
     psqlPassword = "password",
     picturePath = "pictures",
-    port = "8081"
+    port = "8081",
+    jwtSecretKey = "secret"
   )
-
 
   private object Routes:
 
@@ -64,16 +74,25 @@ object Main extends IOApp.Simple:
       )
 
     private def makeRoutes(
+        c: ServerConfig,
         lr: LocationsRepository[IO],
         os: ObjectStore[IO]
     ): Resource[IO, HttpRoutes[IO]] =
-      SimpleRestJsonBuilder.routes(make(lr, os)).resource
+      for
+        locRoutes    <- SimpleRestJsonBuilder.routes(makeLocationService(lr, os)).resource
+        authedRoutes <- SimpleRestJsonBuilder.routes(fromServerConfig(c)).resource
+      yield locRoutes <+> authedRoutes
 
     private val docs: HttpRoutes[IO] =
-      smithy4s.http4s.swagger.docs[IO](LocationsService)
+      smithy4s.http4s.swagger.docs[IO](LocationsService) <+> smithy4s.http4s.swagger
+        .docs[IO](AuthService)
 
-    def all(lr: LocationsRepository[IO], os: ObjectStore[IO]): Resource[IO, HttpRoutes[IO]] =
-      makeRoutes(lr, os).map(_ <+> docs).map(policy.apply(_))
+    def all(
+        c: ServerConfig,
+        lr: LocationsRepository[IO],
+        os: ObjectStore[IO]
+    ): Resource[IO, HttpRoutes[IO]] =
+      makeRoutes(c, lr, os).map(_ <+> docs).map(policy.apply(_))
 
   private def createFolderIfNotExist(path: Path): IO[Path] =
     if Files.exists(path) then IO(path)
@@ -87,7 +106,7 @@ object Main extends IOApp.Simple:
       p              <- createFolderIfNotExist(Path.of("pictures")).toResource
       im             <- fromPath(p).toResource
       db             <- fromSession(psqlSession).toResource
-      routes         <- Routes.all(db, im)
+      routes         <- Routes.all(serverConfig, db, im)
       srv <- EmberServerBuilder
         .default[IO]
         .withPort(Port.fromString(serverConfig.port).get)

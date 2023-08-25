@@ -6,5 +6,6 @@ case class ServerConfig(
     psqlUsername: String,
     psqlPassword: String,
     picturePath: String,
-    port: String
+    port: String,
+    jwtSecretKey: String
 )
