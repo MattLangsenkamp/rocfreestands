@@ -6,7 +6,7 @@ import io.circe.parser.*
 import cats.data.{Kleisli, OptionT}
 import cats.effect.IO
 import com.rocfreestands.server.config.ServerConfig
-import com.rocfreestands.core.{AuthResponse, AuthService}
+import com.rocfreestands.core.{AuthService, AuthResponse}
 import io.circe.Decoder
 import org.http4s.{AuthedRequest, AuthedRoutes, BasicCredentials, Request, Response, Status}
 import org.http4s.headers.Authorization
@@ -34,7 +34,7 @@ object AuthServiceImpl:
   def fromServerConfig(config: ServerConfig): AuthService[IO] = new AuthService[IO] {
 
     private def makeToken(username: String) =
-      JwtCirce.encode(makeClaim(username), config.jwtSecretKey, algo)
+      f"Authorization=${JwtCirce.encode(makeClaim(username), config.jwtSecretKey, algo)}"
 
     override def refresh(cookie: String): IO[AuthResponse] =
       JwtCirce.decode(cookie) match

@@ -4,14 +4,7 @@ import cats.data.Validated
 import cats.effect.*
 import cats.implicits.*
 import com.comcast.ip4s.*
-import com.rocfreestands.core.{
-  AuthService,
-  DeleteLocationOutput,
-  Location,
-  LocationInput,
-  Locations,
-  LocationsService
-}
+import com.rocfreestands.core.{AuthService, AuthedLocationsService, DeleteLocationOutput, Location, LocationInput, Locations, PublicLocationsService}
 import com.rocfreestands.server.config.{FlywayConfig, ServerConfig}
 import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
@@ -20,23 +13,12 @@ import org.http4s.server.middleware.CORS
 import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.database.{Flyway, SkunkSession}
-import com.rocfreestands.server.services.{
-  AuthServiceImpl,
-  LocationsRepository,
-  ObjectStore,
-  fromPath,
-  fromSession,
-  makeLocationService
-}
-import com.rocfreestands.server.services.AuthServiceImpl.fromServerConfig
+import com.rocfreestands.server.middleware.JwtAuthMiddlewear
+import com.rocfreestands.server.services.{AuthServiceImpl, LocationsRepository, ObjectStore, fromPath, fromSession, makePublicLocationService}
+import com.rocfreestands.server.services.AuthServiceImpl.{fromServerConfig, makeAuthMiddleWear}
+import com.rocfreestands.server.services.AuthedLocationServiceImpl.makeAuthedLocationService
 import fly4s.core.*
-import fly4s.core.data.{
-  BaselineResult,
-  Fly4sConfig,
-  MigrateResult,
-  ValidatedMigrateResult,
-  Location as MigrationLocation
-}
+import fly4s.core.data.{BaselineResult, Fly4sConfig, MigrateResult, ValidatedMigrateResult, Location as MigrationLocation}
 import fly4s.implicits.*
 
 import java.nio.file.{Files, Path}
@@ -78,14 +60,23 @@ object Main extends IOApp.Simple:
         lr: LocationsRepository[IO],
         os: ObjectStore[IO]
     ): Resource[IO, HttpRoutes[IO]] =
+      val middleWear = makeAuthMiddleWear(c)
       for
-        locRoutes    <- SimpleRestJsonBuilder.routes(makeLocationService(lr, os)).resource
+        pubLocRoutes <- SimpleRestJsonBuilder
+          .routes(makePublicLocationService(lr, os))
+          .resource
+        authLocRoutes <- SimpleRestJsonBuilder
+          .routes(makeAuthedLocationService(lr, os))
+          .middleware(JwtAuthMiddlewear.fromServerConfig(c))
+          .resource
         authRoutes <- SimpleRestJsonBuilder.routes(fromServerConfig(c)).resource
-      yield locRoutes <+> authRoutes
+      yield pubLocRoutes <+> authLocRoutes <+> authRoutes
 
     private val docs: HttpRoutes[IO] =
-      smithy4s.http4s.swagger.docs[IO](LocationsService) <+> smithy4s.http4s.swagger
-        .docs[IO](AuthService)
+      smithy4s.http4s.swagger.docs[IO](AuthedLocationsService, AuthService, PublicLocationsService)
+      //smithy4s.http4s.swagger.docs[IO](AuthedLocationsService) <+>
+        //smithy4s.http4s.swagger.docs[IO](AuthService) <+>
+        //smithy4s.http4s.swagger.docs[IO](PublicLocationsService)
 
     def all(
         c: ServerConfig,

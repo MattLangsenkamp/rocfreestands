@@ -15,6 +15,7 @@ operation Login {
     output: AuthResponse
 }
 
+
 @http(method: "POST", uri: "/refresh")
 operation Refresh {
     input : AuthRefresh

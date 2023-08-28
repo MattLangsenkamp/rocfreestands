@@ -6,7 +6,7 @@ use alloy#simpleRestJson
 
 @simpleRestJson
 service PublicLocationsService {
-    operations: [GetLocations, CreateLocation, DeleteLocation]
+    operations: [GetLocations]
 }
 
 @http(method: "GET", uri: "/locations")
