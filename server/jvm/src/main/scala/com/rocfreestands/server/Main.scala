@@ -15,7 +15,7 @@ import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.database.{Flyway, SkunkSession}
 import com.rocfreestands.server.middleware.JwtAuthMiddlewear
 import com.rocfreestands.server.services.{AuthServiceImpl, LocationsRepository, ObjectStore, fromPath, fromSession, makePublicLocationService}
-import com.rocfreestands.server.services.AuthServiceImpl.{fromServerConfig, makeAuthMiddleWear}
+import com.rocfreestands.server.services.AuthServiceImpl.fromServerConfig
 import com.rocfreestands.server.services.AuthedLocationServiceImpl.makeAuthedLocationService
 import fly4s.core.*
 import fly4s.core.data.{BaselineResult, Fly4sConfig, MigrateResult, ValidatedMigrateResult, Location as MigrationLocation}
@@ -46,12 +46,14 @@ object Main extends IOApp.Simple:
   private object Routes:
 
     private val policy = CORS.policy
+      .withAllowCredentials(true)
       .withAllowOriginHost(
         Set(
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8080)),
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(5173)),
           Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8080)),
-          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8081))
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8081)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(5173))
         )
       )
 
@@ -60,7 +62,6 @@ object Main extends IOApp.Simple:
         lr: LocationsRepository[IO],
         os: ObjectStore[IO]
     ): Resource[IO, HttpRoutes[IO]] =
-      val middleWear = makeAuthMiddleWear(c)
       for
         pubLocRoutes <- SimpleRestJsonBuilder
           .routes(makePublicLocationService(lr, os))
@@ -74,9 +75,6 @@ object Main extends IOApp.Simple:
 
     private val docs: HttpRoutes[IO] =
       smithy4s.http4s.swagger.docs[IO](AuthedLocationsService, AuthService, PublicLocationsService)
-      //smithy4s.http4s.swagger.docs[IO](AuthedLocationsService) <+>
-        //smithy4s.http4s.swagger.docs[IO](AuthService) <+>
-        //smithy4s.http4s.swagger.docs[IO](PublicLocationsService)
 
     def all(
         c: ServerConfig,

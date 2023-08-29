@@ -1,6 +1,4 @@
 package com.rocfreestands.server.services
-import dev.profunktor.auth.*
-import dev.profunktor.auth.jwt.*
 import pdi.jwt.*
 import io.circe.parser.*
 import cats.data.{Kleisli, OptionT}
@@ -18,7 +16,6 @@ import scala.util.{Failure, Success}
 object AuthServiceImpl:
 
   private val algo    = JwtAlgorithm.HS256
-  private val jwtAuth = (conf: ServerConfig) => JwtAuth.hmac(conf.jwtSecretKey, algo)
 
   case class AuthPayload(user: String)
 
@@ -57,15 +54,3 @@ object AuthServiceImpl:
       else AuthResponse("Login Failed")
     )
   }
-
-  def makeAuthMiddleWear(config: ServerConfig): AuthMiddleware[IO, AuthPayload] =
-    val authenticate: JwtToken => JwtClaim => IO[Option[AuthPayload]] =
-      (token: JwtToken) =>
-        (claim: JwtClaim) =>
-          decode[AuthPayload](claim.content) match
-            case Right(payload) =>
-              IO.pure(
-                Option.when(payload.user == config.username)(payload)
-              )
-            case Left(_) => IO(None)
-    JwtAuthMiddleware[IO, AuthPayload](jwtAuth(config), authenticate)

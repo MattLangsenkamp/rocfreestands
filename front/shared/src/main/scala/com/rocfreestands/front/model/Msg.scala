@@ -26,7 +26,7 @@ enum Msg:
   case OnLoginSuccess
   case OnLoginError
   case CheckIfLoggedIn
-  case SetJWT(jwt: String)
+  case SetLoggedIn(loggedIn: Boolean)
 
   // add location MSGs
   case BeginAddNewLocation // moves to location selection

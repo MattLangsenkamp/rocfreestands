@@ -7,7 +7,7 @@ import tyrian.syntax.*
 
 def locationsPage: Model => Html[Msg] = (model: Model) =>
 
-  val newLocElements = if model.authStatus.signedIn then
+  val newLocElements = if model.signedIn then
     Some(model.newLocationStep match
       case Some(step) =>
         step match

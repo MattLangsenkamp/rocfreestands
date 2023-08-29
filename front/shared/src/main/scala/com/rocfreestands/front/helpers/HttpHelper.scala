@@ -15,13 +15,17 @@ import org.http4s.implicits.uri
 import tyrian.Cmd
 import io.circe.generic.auto.*
 import org.http4s.circe.CirceEntityCodec.*
+import org.scalajs.dom.{RequestCredentials, RequestMode}
 import smithy4s.ByteArray
 
 object HttpHelper:
 
   private case class Address(display_name: String)
 
-  private val client = FetchClientBuilder[IO].create
+  private val client = FetchClientBuilder[IO]
+    .withMode(RequestMode.cors)
+    .withCredentials(RequestCredentials.include)
+    .create
   private val pubLocs =
     SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
   private val auth =
@@ -55,7 +59,9 @@ object HttpHelper:
         IO.pure(Msg.NoOp)
       case Right(c) =>
         c.getLocations()
-          .map(l => Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
+          .map(l =>
+            println(l)
+            Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
     Cmd.Run(io)
 
   def deleteLocation(uuid: String): Cmd[IO, Msg] =
