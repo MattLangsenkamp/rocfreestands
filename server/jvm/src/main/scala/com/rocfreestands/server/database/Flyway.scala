@@ -1,7 +1,7 @@
 package com.rocfreestands.server.database
 
 import cats.effect.{IO, Resource}
-import com.rocfreestands.server.config.FlywayConfig
+import com.rocfreestands.server.config.FlywayConfig.FlywayConfig
 import fly4s.core.Fly4s
 import fly4s.core.data.{
   BaselineResult,

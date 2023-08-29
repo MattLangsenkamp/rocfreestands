@@ -2,7 +2,7 @@ package com.rocfreestands.server.middleware
 
 import cats.effect.IO
 import smithy4s.http4s.ServerEndpointMiddleware
-import com.rocfreestands.server.config.ServerConfig
+import com.rocfreestands.server.config.ServerConfig.ServerConfig
 import com.rocfreestands.server.services.AuthServiceImpl.AuthPayload
 import io.circe.parser.decode
 import org.http4s.{Credentials, HttpApp, Response, Status}

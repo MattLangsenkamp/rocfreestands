@@ -3,7 +3,7 @@ import pdi.jwt.*
 import io.circe.parser.*
 import cats.data.{Kleisli, OptionT}
 import cats.effect.IO
-import com.rocfreestands.server.config.ServerConfig
+import com.rocfreestands.server.config.ServerConfig.ServerConfig
 import com.rocfreestands.core.{AuthService, AuthResponse}
 import io.circe.Decoder
 import org.http4s.{AuthedRequest, AuthedRoutes, BasicCredentials, Request, Response, Status}

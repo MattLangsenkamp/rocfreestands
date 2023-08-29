@@ -54,7 +54,8 @@ lazy val server = crossProject(JVMPlatform)
       "org.postgresql"                % "postgresql"              % "42.6.0",
       "dev.profunktor"               %% "http4s-jwt-auth"         % "1.2.0",
       "com.github.jwt-scala"         %% "jwt-core"                % "9.3.0",
-      "com.github.jwt-scala"         %% "jwt-circe"               % "9.3.0"
+      "com.github.jwt-scala"         %% "jwt-circe"               % "9.3.0",
+      "is.cir"                       %% "ciris"                   % "3.2.0"
     ),
     fork := true
   )

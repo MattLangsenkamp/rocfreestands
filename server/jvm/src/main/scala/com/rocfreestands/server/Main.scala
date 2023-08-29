@@ -4,8 +4,17 @@ import cats.data.Validated
 import cats.effect.*
 import cats.implicits.*
 import com.comcast.ip4s.*
-import com.rocfreestands.core.{AuthService, AuthedLocationsService, DeleteLocationOutput, Location, LocationInput, Locations, PublicLocationsService}
-import com.rocfreestands.server.config.{FlywayConfig, ServerConfig}
+import com.rocfreestands.core.{
+  AuthService,
+  AuthedLocationsService,
+  DeleteLocationOutput,
+  Location,
+  LocationInput,
+  Locations,
+  PublicLocationsService
+}
+import com.rocfreestands.server.config.FlywayConfig.*
+import com.rocfreestands.server.config.ServerConfig.{serverConfig, *}
 import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.headers.Origin
@@ -14,11 +23,24 @@ import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.database.{Flyway, SkunkSession}
 import com.rocfreestands.server.middleware.JwtAuthMiddlewear
-import com.rocfreestands.server.services.{AuthServiceImpl, LocationsRepository, ObjectStore, fromPath, fromSession, makePublicLocationService}
+import com.rocfreestands.server.services.{
+  AuthServiceImpl,
+  LocationsRepository,
+  ObjectStore,
+  fromPath,
+  fromSession,
+  makePublicLocationService
+}
 import com.rocfreestands.server.services.AuthServiceImpl.fromServerConfig
 import com.rocfreestands.server.services.AuthedLocationServiceImpl.makeAuthedLocationService
 import fly4s.core.*
-import fly4s.core.data.{BaselineResult, Fly4sConfig, MigrateResult, ValidatedMigrateResult, Location as MigrationLocation}
+import fly4s.core.data.{
+  BaselineResult,
+  Fly4sConfig,
+  MigrateResult,
+  ValidatedMigrateResult,
+  Location as MigrationLocation
+}
 import fly4s.implicits.*
 
 import java.nio.file.{Files, Path}
@@ -33,7 +55,7 @@ object Main extends IOApp.Simple:
     migrationsLocations = List("db")
   )
 
-  private val serverConfig: ServerConfig = ServerConfig(
+  /*private val serverConfig: ServerConfig = ServerConfig(
     username = "admin",
     password = "admin",
     psqlUsername = "rocfreestands",
@@ -41,7 +63,7 @@ object Main extends IOApp.Simple:
     picturePath = "pictures",
     port = "8081",
     jwtSecretKey = "secret"
-  )
+  )*/
 
   private object Routes:
 
@@ -89,13 +111,14 @@ object Main extends IOApp.Simple:
 
   def run: IO[Unit] =
     val s = for
+      serverConfig   <- serverConfig.load[IO].toResource
       _              <- Flyway.runFlywayMigration(dbConfig)
       psqlConnection <- SkunkSession.skunkSession
       psqlSession    <- psqlConnection
       p              <- createFolderIfNotExist(Path.of("pictures")).toResource
       im             <- fromPath(p).toResource
       db             <- fromSession(psqlSession).toResource
-      routes         <- Routes.all(serverConfig, db, im)
+      routes         <- IO.println(serverConfig).toResource *> Routes.all(serverConfig, db, im)
       srv <- EmberServerBuilder
         .default[IO]
         .withPort(Port.fromString(serverConfig.port).get)
