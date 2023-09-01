@@ -54,7 +54,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
   def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) =
     (
       Model.init(),
-      Cmd.Batch(Cmd.emit(Msg.CheckIfLoggedIn), HttpHelper.getLocations)
+      Cmd.Batch(HttpHelper.getLocations, Cmd.emit(Msg.CheckIfLoggedIn))
     )
 
   def update(
@@ -118,7 +118,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       (
         model.copy(signedIn = loggedIn),
         if loggedIn then Cmd.Batch(Cmd.emit(Msg.JumpToLocations), EffectHelper.showUpdateButtons())
-        else Cmd.None
+        else Cmd.emit(Msg.JumpToLocations)
       )
     case Msg.BeginAddNewLocation =>
       val nextMessage = model.map match

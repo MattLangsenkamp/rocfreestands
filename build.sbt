@@ -1,9 +1,10 @@
 import org.scalajs.linker.interface.ModuleSplitStyle
-
+import _root_.sbtdocker.{DockerPlugin => DockPlug}
 val scala3Version = "3.3.0"
 
 ThisBuild / tlBaseVersion := "0.1"
 ThisBuild / scalaVersion  := scala3Version
+ThisBuild / organization  := "rocfreestands"
 
 lazy val front = crossProject(JSPlatform)
   .crossType(CrossType.Full)
@@ -57,8 +58,25 @@ lazy val server = crossProject(JVMPlatform)
       "com.github.jwt-scala"         %% "jwt-circe"               % "9.3.0",
       "is.cir"                       %% "ciris"                   % "3.2.0"
     ),
-    fork := true
+    fork := true,
+    assemblyMergeStrategy := (_ => MergeStrategy.rename),
+    assemblyJarName := "rocfreestands-fat.jar",
+    docker / dockerfile := {
+      val appDir: File = stage.value
+      val targetDir = "/app"
+      println(appDir)
+      new Dockerfile {
+        from("ghcr.io/graalvm/graalvm-community:20-ol7")
+        expose(8081)
+        expose(5432)
+        entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+        copy(appDir, targetDir, chown = "daemon:daemon")
+      }
+    },
+    docker / imageNames := Seq(ImageName(s"${organization.value}/${name.value}:latest"))
   )
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockPlug)
   .dependsOn(core)
 
 lazy val rocfreestands = tlCrossRootProject

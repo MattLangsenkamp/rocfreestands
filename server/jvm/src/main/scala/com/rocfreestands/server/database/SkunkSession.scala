@@ -11,7 +11,7 @@ object SkunkSession:
 
   def skunkSession: Resource[IO, Resource[IO, Session[IO]]] =
     Session.pooled[IO](
-      host = "localhost",
+      host = "db",
       port = 5432,
       user = "rocfreestands",
       database = "rocfreestands",

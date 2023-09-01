@@ -13,7 +13,7 @@ import com.rocfreestands.core.{
   Locations,
   PublicLocationsService
 }
-import com.rocfreestands.server.config.FlywayConfig.*
+import com.rocfreestands.server.config.FlywayConfig.{flywayConfig, *}
 import com.rocfreestands.server.config.ServerConfig.{serverConfig, *}
 import org.http4s.{HttpRoutes, Uri}
 import org.http4s.ember.server.EmberServerBuilder
@@ -46,24 +46,6 @@ import fly4s.implicits.*
 import java.nio.file.{Files, Path}
 import scala.util.Try
 object Main extends IOApp.Simple:
-
-  val dbConfig: FlywayConfig = FlywayConfig(
-    url = "jdbc:postgresql://localhost/rocfreestands",
-    user = Some("rocfreestands"),
-    password = Some("password".toCharArray),
-    migrationsTable = "flyway",
-    migrationsLocations = List("db")
-  )
-
-  /*private val serverConfig: ServerConfig = ServerConfig(
-    username = "admin",
-    password = "admin",
-    psqlUsername = "rocfreestands",
-    psqlPassword = "password",
-    picturePath = "pictures",
-    port = "8081",
-    jwtSecretKey = "secret"
-  )*/
 
   private object Routes:
 
@@ -110,20 +92,24 @@ object Main extends IOApp.Simple:
     else IO.blocking(Files.createDirectory(path))
 
   def run: IO[Unit] =
+
+    println("yeaaaa")
     val s = for
+      flyConfig      <- flywayConfig.load[IO].toResource
       serverConfig   <- serverConfig.load[IO].toResource
-      _              <- Flyway.runFlywayMigration(dbConfig)
+      _              <- Flyway.runFlywayMigration(flyConfig)
       psqlConnection <- SkunkSession.skunkSession
       psqlSession    <- psqlConnection
       p              <- createFolderIfNotExist(Path.of("pictures")).toResource
       im             <- fromPath(p).toResource
       db             <- fromSession(psqlSession).toResource
-      routes         <- IO.println(serverConfig).toResource *> Routes.all(serverConfig, db, im)
+      routes         <- Routes.all(serverConfig, db, im)
       srv <- EmberServerBuilder
         .default[IO]
         .withPort(Port.fromString(serverConfig.port).get)
+        .withHost(host"0.0.0.0")
         .withHttpApp(routes.orNotFound)
         .build
     yield srv
 
-    s.evalMap(srv => IO.println(f"server running at ${srv.addressIp4s}")).useForever
+    s.evalMap(srv => IO.println(f"who and why? server running at ${srv.addressIp4s}")).useForever
