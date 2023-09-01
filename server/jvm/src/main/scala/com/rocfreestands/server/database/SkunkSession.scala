@@ -1,20 +1,22 @@
 package com.rocfreestands.server.database
 
-import cats.effect._
+import cats.effect.*
 import fs2.*
-import skunk._
-import cats.implicits._
-import skunk.implicits._
-import skunk.codec.all._
-import natchez.Trace.Implicits._
+import skunk.*
+import cats.implicits.*
+import com.rocfreestands.server.config
+import com.rocfreestands.server.config.ServerConfig.ServerConfig
+import skunk.implicits.*
+import skunk.codec.all.*
+import natchez.Trace.Implicits.*
 object SkunkSession:
 
-  def skunkSession: Resource[IO, Resource[IO, Session[IO]]] =
+  def fromServerConfig(serverConfig: ServerConfig): Resource[IO, Resource[IO, Session[IO]]] =
     Session.pooled[IO](
-      host = "localhost",
+      host = serverConfig.psqlHost,
       port = 5432,
-      user = "rocfreestands",
+      user = serverConfig.psqlUsername,
       database = "rocfreestands",
-      password = Some("password"),
+      password = Some(serverConfig.psqlPassword),
       max = 4
     )

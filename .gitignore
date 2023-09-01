@@ -27,3 +27,5 @@ node_modules
 target
 .bsp
 package-lock.json
+server.env
+db.env

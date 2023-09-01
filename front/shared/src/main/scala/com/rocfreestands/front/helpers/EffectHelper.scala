@@ -46,17 +46,13 @@ object EffectHelper:
         Msg.UpdateLocationForm(model.newLocationForm.copy(image = contents))
     }
 
-  def setJWT(model: Model, jwt: String, key: String = "jwt"): Cmd[IO, Msg] =
-    LocalStorage.setItem(key, jwt) {
-      case LocalStorage.Result.Success => Msg.JumpToLocations
-      case e                           => Msg.NoOp
-    }
-
-  def getJWT(model: Model, key: String = "jwt"): Cmd[IO, Msg] =
-    LocalStorage.getItem(key) {
-      case Right(LocalStorage.Result.Found(value)) =>
-        Msg.SetJWT(value)
-      case Left(LocalStorage.Result.NotFound(e)) => Msg.NoOp
+  def lookForJWT(model: Model, key: String = "Authorization"): Cmd[IO, Msg] =
+    Cmd.emit {
+      val loggedIn = document.cookie
+        .split(";")
+        .exists(_.split("=")(0) == key)
+      if loggedIn then Msg.SetLoggedIn(true)
+      else Msg.SetLoggedIn(false)
     }
 
   def showUpdateButtons(): Cmd[IO, Msg] =

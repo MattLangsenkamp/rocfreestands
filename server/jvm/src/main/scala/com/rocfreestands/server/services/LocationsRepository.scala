@@ -26,7 +26,7 @@ def fromSession(s: Session[IO]): IO[LocationsRepository[IO]] =
 
     override def createLocation(location: Location): IO[Location] =
       s.transaction.use { xa =>
-        val j = for
+        for
           sp               <- xa.savepoint
           creationDateTime <- IO.pure(Timestamp.nowUTC())
           _ <- createLoc
@@ -38,7 +38,6 @@ def fromSession(s: Session[IO]): IO[LocationsRepository[IO]] =
                 xa.rollback(sp)
             }
         yield location
-        j
       }
 
     override def deleteLocation(uuid: String): IO[String] =

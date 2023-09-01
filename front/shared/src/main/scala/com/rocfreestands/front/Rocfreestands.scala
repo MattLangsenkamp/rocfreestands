@@ -1,11 +1,24 @@
 package com.rocfreestands.front
 
-import com.rocfreestands.front.model.LocationForm.{LocationForm, LocationFormErrors, validateLocationForm}
+import com.rocfreestands.front.model.LocationForm.{
+  LocationForm,
+  LocationFormErrors,
+  validateLocationForm
+}
 import cats.effect.IO
 import cats.effect.IO.asyncForIO
 import cats.data.Validated.*
 import com.rocfreestands.front.components.*
-import com.rocfreestands.front.model.{AuthStatus, LoginForm, MapLocation, Model, Msg, NewLocationStep, PopupModel, Routes, Styles}
+import com.rocfreestands.front.model.{
+  LoginForm,
+  MapLocation,
+  Model,
+  Msg,
+  NewLocationStep,
+  PopupModel,
+  Routes,
+  Styles
+}
 import org.scalajs.dom
 import org.scalajs.dom.{CustomEvent, MouseEvent, document, html}
 import typings.leaflet.mod as L
@@ -15,8 +28,7 @@ import tyrian.cmds.*
 import tyrian.syntax.*
 import com.rocfreestands.core.Locations
 import com.rocfreestands.front.helpers.{AuthHelper, EffectHelper, HttpHelper, LeafletHelper}
-import com.rocfreestands.front.model.{AuthStatus, LoginForm, Model, Msg, NewLocationStep, PopupModel, Routes, Styles}
-
+import com.rocfreestands.front.model.{LoginForm, Model, Msg, NewLocationStep, PopupModel, Routes, Styles}
 import scala.concurrent.duration.*
 import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.annotation.*
@@ -42,7 +54,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
   def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) =
     (
       Model.init(),
-      Cmd.Batch(Cmd.emit(Msg.CheckIfLoggedIn), HttpHelper.getLocations)
+      Cmd.Batch(HttpHelper.getLocations, Cmd.emit(Msg.CheckIfLoggedIn))
     )
 
   def update(
@@ -78,7 +90,6 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
         EffectHelper.addLocationsToMap(model, locations)
       )
     case Msg.AddLocationToMap(location) =>
-      println("nice")
       val m = (
         model.copy(locations = model.locations ::: location :: Nil),
         EffectHelper.addNewPermanentLocation(model, location)
@@ -92,21 +103,22 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     case Msg.SubmitLoginForm(f) =>
       val (checkedForm, valid) = AuthHelper.updateLoginForm(f)
       if (valid)
-        // todo network request to get JWT
-        // should we clear login form only upon success?
-        (model.copy(loginForm = LoginForm(None, None, None, None)), Cmd.Emit(Msg.OnLoginSuccess))
-      else
-        (model.copy(loginForm = checkedForm), Cmd.None)
+        val cmd = (for
+          username <- checkedForm.username
+          password <- checkedForm.password
+        yield HttpHelper.login(username, password)).getOrElse(Cmd.None)
+        (model, cmd)
+      else (model.copy(loginForm = checkedForm), Cmd.None)
     case Msg.OnLoginSuccess =>
-      (model, Cmd.emit(Msg.SetJWT("loggedin")))
+      (model.copy(loginForm = LoginForm(None, None, None, None)), Cmd.emit(Msg.SetLoggedIn(true)))
     case Msg.OnLoginError => ???
     case Msg.CheckIfLoggedIn =>
-      (model, EffectHelper.getJWT(model))
-    case Msg.SetJWT(jwt) =>
-      println("innnnn")
+      (model, EffectHelper.lookForJWT(model))
+    case Msg.SetLoggedIn(loggedIn) =>
       (
-        model.copy(authStatus = AuthStatus(jwt = Some(jwt), signedIn = true)),
-        Cmd.Batch(EffectHelper.setJWT(model, jwt), EffectHelper.showUpdateButtons())
+        model.copy(signedIn = loggedIn),
+        if loggedIn then Cmd.Batch(Cmd.emit(Msg.JumpToLocations), EffectHelper.showUpdateButtons())
+        else Cmd.emit(Msg.JumpToLocations)
       )
     case Msg.BeginAddNewLocation =>
       val nextMessage = model.map match

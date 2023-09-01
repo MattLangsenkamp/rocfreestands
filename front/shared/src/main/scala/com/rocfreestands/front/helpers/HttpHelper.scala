@@ -8,57 +8,76 @@ import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dom.FetchClientBuilder
 import smithy4s.http4s.SimpleRestJsonBuilder
 import org.http4s.Uri
-import com.rocfreestands.core.{Location, LocationsService}
+import com.rocfreestands.core.{AuthService, AuthedLocationsService, Location, PublicLocationsService}
 import com.rocfreestands.front.model.LocationForm.LocationForm
 import com.rocfreestands.front.model.{LocationForm, Model, Msg}
 import org.http4s.implicits.uri
 import tyrian.Cmd
 import io.circe.generic.auto.*
 import org.http4s.circe.CirceEntityCodec.*
+import org.scalajs.dom.{RequestCredentials, RequestMode}
 import smithy4s.ByteArray
+
 object HttpHelper:
 
   private case class Address(display_name: String)
 
-  private val client = FetchClientBuilder[IO].create
-  private val r =
-    SimpleRestJsonBuilder(LocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
+  private val client = FetchClientBuilder[IO]
+    .withMode(RequestMode.cors)
+    .withCredentials(RequestCredentials.include)
+    .create
+  private val pubLocs =
+    SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
+  private val auth =
+    SimpleRestJsonBuilder(AuthService).client(client).uri(uri"http://127.0.0.1:8081/").use
+  private val authedLocs =
+    SimpleRestJsonBuilder(AuthedLocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
 
   def createLocation(
       nlf: LocationForm,
       marker: L.Marker_[Any]
   ): Cmd[IO, Msg] =
     Cmd.Run {
-      r.map { c =>
-        val latLng = marker.getLatLng()
-        c.createLocation(
-          nlf.address,
-          nlf.name,
-          nlf.description,
-          latLng.lat,
-          latLng.lng,
-          nlf.image,
-        ).map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
-      }.getOrElse(IO.pure(Msg.NoOp))
+      authedLocs
+        .map { c =>
+          val latLng = marker.getLatLng()
+          c.createLocation(
+            nlf.address,
+            nlf.name,
+            nlf.description,
+            latLng.lat,
+            latLng.lng,
+            nlf.image
+          ).map(l => Msg.OnAddLocationSuccess(LeafletHelper.locationToMapLocation(l)))
+        }
+        .getOrElse(IO.pure(Msg.NoOp))
     }
 
   def getLocations: Cmd[IO, Msg] =
-    val io = r match
+    val io = pubLocs match
       case Left(_) =>
         IO.pure(Msg.NoOp)
       case Right(c) =>
         c.getLocations()
-          .map(l => Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
-
+          .map(l =>
+            println(l)
+            Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
     Cmd.Run(io)
 
   def deleteLocation(uuid: String): Cmd[IO, Msg] =
-    val io = r
+    val io = authedLocs
       .map {
         _.deleteLocation(uuid).map(resp => Msg.OnDeleteLocationSuccess(resp.message, uuid))
       }
       .getOrElse(IO.pure(Msg.OnDeleteLocationFailure("failed to instantiate client")))
+    Cmd.Run(io)
 
+  def login(username: String, password: String): Cmd[IO, Msg] =
+    val io = auth
+      .map { c =>
+        c.login(username, password).map(resp => Msg.OnLoginSuccess)
+      }
+      .getOrElse(IO(Msg.OnLoginError))
     Cmd.Run(io)
 
   def getLocationAddress(model: Model): Cmd[IO, Msg] =

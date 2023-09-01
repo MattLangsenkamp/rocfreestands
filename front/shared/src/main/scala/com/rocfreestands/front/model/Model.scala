@@ -11,7 +11,7 @@ case class Model(
     locations: List[MapLocation],
     map: Option[L.Map_],
     loginForm: LoginForm,
-    authStatus: AuthStatus,
+    signedIn: Boolean,
     newLocationStep: Option[NewLocationStep],
     newLocationForm: LocationForm,
     newLocationFormErrors: LocationFormErrors,
@@ -30,10 +30,6 @@ enum NewLocationStep:
   case LocationSelection
   case AddDetails
 
-case class AuthStatus(
-    jwt: Option[String],
-    signedIn: Boolean
-)
 object Model:
   def init(): Model =
     Model(
@@ -43,9 +39,10 @@ object Model:
       locations = List(),
       None,
       LoginForm(None, None, None, None),
-      AuthStatus(None, false),
+      false,
       None,
       LocationForm(),
       LocationFormErrors(),
       None,
-      None    )
+      None
+    )
