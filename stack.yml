@@ -7,7 +7,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      URL: jdbc:postgresql://db/rocfreestands
+      PSQL_HOST: db
       PSQL_USERNAME: rocfreestands
       PSQL_PASSWORD: password
       RFS_USERNAME: admin
@@ -28,8 +28,6 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
-    env_file:
-      - db.env
 
   adminer:
     image: adminer

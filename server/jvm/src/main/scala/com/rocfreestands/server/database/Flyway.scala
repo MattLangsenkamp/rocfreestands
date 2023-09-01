@@ -14,7 +14,7 @@ import fly4s.core.data.{
 object Flyway:
   def runFlywayMigration(dbConfig: FlywayConfig): Resource[IO, MigrateResult] = Fly4s
     .make[IO](
-      url = dbConfig.url,
+      url = dbConfig.host,
       user = Some(dbConfig.user),
       password = Some(dbConfig.password),
       config = Fly4sConfig(

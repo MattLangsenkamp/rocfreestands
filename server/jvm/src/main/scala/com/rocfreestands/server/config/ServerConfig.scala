@@ -8,6 +8,7 @@ object ServerConfig:
   case class ServerConfig(
       username: String,
       password: String,
+      psqlHost: String,
       psqlUsername: String,
       psqlPassword: String,
       picturePath: String,
@@ -19,6 +20,7 @@ object ServerConfig:
     (
       env("RFS_USERNAME").as[String].default("admin"),
       env("RFS_PASSWORD").as[String].default("admin"),
+      env("PSQL_HOST").as[String].default("localhost"),
       env("PSQL_USERNAME").as[String].default("rocfreestands"),
       env("PSQL_PASSWORD").as[String].default("password"),
       env("PICTURE_PATH").as[String].default("pictures"),

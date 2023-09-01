@@ -92,15 +92,13 @@ object Main extends IOApp.Simple:
     else IO.blocking(Files.createDirectory(path))
 
   def run: IO[Unit] =
-
-    println("yeaaaa")
     val s = for
       flyConfig      <- flywayConfig.load[IO].toResource
       serverConfig   <- serverConfig.load[IO].toResource
       _              <- Flyway.runFlywayMigration(flyConfig)
-      psqlConnection <- SkunkSession.skunkSession
+      psqlConnection <- SkunkSession.fromServerConfig(serverConfig)
       psqlSession    <- psqlConnection
-      p              <- createFolderIfNotExist(Path.of("pictures")).toResource
+      p              <- createFolderIfNotExist(Path.of(serverConfig.picturePath)).toResource
       im             <- fromPath(p).toResource
       db             <- fromSession(psqlSession).toResource
       routes         <- Routes.all(serverConfig, db, im)
@@ -112,4 +110,4 @@ object Main extends IOApp.Simple:
         .build
     yield srv
 
-    s.evalMap(srv => IO.println(f"who and why? server running at ${srv.addressIp4s}")).useForever
+    s.evalMap(srv => IO.println(f"server running at ${srv.addressIp4s}")).useForever

@@ -6,7 +6,7 @@ import smithy.api.NonEmptyString
 
 object FlywayConfig:
   case class FlywayConfig(
-      url: String,
+      host: String,
       user: String,
       password: Array[Char],
       migrationsTable: String,
@@ -15,7 +15,7 @@ object FlywayConfig:
 
   given flywayConfig: ConfigValue[IO, FlywayConfig] =
     (
-      env("URL").as[String].default("jdbc:postgresql://localhost/rocfreestands"),
+      env("PSQL_HOST").as[String].default("localhost").map(h => f"jdbc:postgresql://$h/rocfreestands"),
       env("PSQL_USERNAME").as[String].default("rocfreestands"),
       env("PSQL_PASSWORD").as[String].default("password").map(_.toCharArray),
       env("MIGRATIONS_TABLE").as[String].default("flyway"),
