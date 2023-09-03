@@ -33,10 +33,6 @@ object LeafletHelper:
           )
       )
       .addTo(m)
-    // m.on_dragend(typings.leaflet.leafletStrings.dragend, e=>
-    //  println("dragged")
-    //  Emit(Msg.NoOp)
-    // )
 
     addLocations(m, model.locations)
 
@@ -97,7 +93,7 @@ object LeafletHelper:
        |          detail: '${location.uuid}',
        |           },
        |           );
-       |        this.dispatchEvent(updateLoc);">update me!</button>
+       |        this.dispatchEvent(updateLoc);">Delete</button>
        |   </div>""".stripMargin
 
   def newLocationSelectionMarker(map: L.Map_): L.Marker_[Any] =

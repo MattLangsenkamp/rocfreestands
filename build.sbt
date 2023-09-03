@@ -23,6 +23,7 @@ lazy val front = crossProject(JSPlatform)
       "org.http4s"      %%% "http4s-circe"  % "0.23.19",
       "org.scalameta"   %%% "munit"         % "0.7.29" % Test
     ),
+    jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
     externalNpm := {
       (ThisBuild / baseDirectory).value
     }
@@ -58,12 +59,12 @@ lazy val server = crossProject(JVMPlatform)
       "com.github.jwt-scala"         %% "jwt-circe"               % "9.3.0",
       "is.cir"                       %% "ciris"                   % "3.2.0"
     ),
-    fork := true,
+    fork                  := true,
     assemblyMergeStrategy := (_ => MergeStrategy.rename),
-    assemblyJarName := "rocfreestands-fat.jar",
+    assemblyJarName       := "rocfreestands-fat.jar",
     docker / dockerfile := {
       val appDir: File = stage.value
-      val targetDir = "/app"
+      val targetDir    = "/app"
       println(appDir)
       new Dockerfile {
         from("ghcr.io/graalvm/graalvm-community:20-ol7")

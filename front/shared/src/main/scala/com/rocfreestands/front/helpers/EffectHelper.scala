@@ -7,6 +7,7 @@ import cats.effect.IO.asyncForIO
 import com.rocfreestands.core.{Location, Locations}
 import com.rocfreestands.front.model.{MapLocation, Model, Msg}
 import org.scalajs.dom.html.Div
+import scala.scalajs.js
 import org.scalajs.dom.document
 import typings.leaflet.mod as L
 
@@ -47,6 +48,7 @@ object EffectHelper:
     }
 
   def lookForJWT(model: Model, key: String = "Authorization"): Cmd[IO, Msg] =
+    // This may not work in the future
     Cmd.emit {
       val loggedIn = document.cookie
         .split(";")

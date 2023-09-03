@@ -26,6 +26,7 @@ enum Msg:
   case OnLoginSuccess
   case OnLoginError
   case CheckIfLoggedIn
+  case TryRefresh
   case SetLoggedIn(loggedIn: Boolean)
 
   // add location MSGs

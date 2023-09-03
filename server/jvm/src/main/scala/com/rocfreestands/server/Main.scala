@@ -66,15 +66,19 @@ object Main extends IOApp.Simple:
         lr: LocationsRepository[IO],
         os: ObjectStore[IO]
     ): Resource[IO, HttpRoutes[IO]] =
+      val mdl = JwtAuthMiddlewear.fromServerConfig(c)
       for
         pubLocRoutes <- SimpleRestJsonBuilder
           .routes(makePublicLocationService(lr, os))
           .resource
         authLocRoutes <- SimpleRestJsonBuilder
           .routes(makeAuthedLocationService(lr, os))
-          .middleware(JwtAuthMiddlewear.fromServerConfig(c))
+          .middleware(mdl)
           .resource
-        authRoutes <- SimpleRestJsonBuilder.routes(fromServerConfig(c)).resource
+        authRoutes <- SimpleRestJsonBuilder
+          .routes(fromServerConfig(c))
+          .middleware(mdl)
+          .resource
       yield pubLocRoutes <+> authLocRoutes <+> authRoutes
 
     private val docs: HttpRoutes[IO] =

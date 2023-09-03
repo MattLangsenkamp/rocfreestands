@@ -15,7 +15,7 @@ import scala.util.{Failure, Success}
 
 object AuthServiceImpl:
 
-  private val algo    = JwtAlgorithm.HS256
+  private val algo = JwtAlgorithm.HS256
 
   case class AuthPayload(user: String)
 
@@ -28,25 +28,14 @@ object AuthServiceImpl:
     expiration = Some(Instant.now.plusSeconds(157784760).getEpochSecond),
     issuedAt = Some(Instant.now.getEpochSecond)
   )
+
   def fromServerConfig(config: ServerConfig): AuthService[IO] = new AuthService[IO] {
 
-    private def makeToken(username: String) =
+    def makeToken(username: String) =
       f"Authorization=${JwtCirce.encode(makeClaim(username), config.jwtSecretKey, algo)}"
 
-    override def refresh(cookie: String): IO[AuthResponse] =
-      JwtCirce.decode(cookie) match
-        case Failure(_) => IO(AuthResponse("Failed to refresh cookie"))
-        case Success(claim) =>
-          decode[AuthPayload](claim.content) match
-            case Right(payload) =>
-              IO.pure(
-                if payload.user == config.username && claim.expiration.exists(claimExp =>
-                    Instant.now.getEpochSecond > claimExp
-                  )
-                then AuthResponse("Refresh Successful", cookie = Some(makeToken(payload.user)))
-                else AuthResponse("Failed to refresh cookie")
-              )
-            case Left(_) => IO(AuthResponse("Failed to refresh cookie"))
+    override def refresh(): IO[AuthResponse] =
+      IO(AuthResponse("Successfully Refreshed Token", Some(makeToken(config.username))))
 
     override def login(username: String, password: String): IO[AuthResponse] = IO(
       if username.equals(config.username) && password.equals(config.password) then

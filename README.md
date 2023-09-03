@@ -9,8 +9,8 @@ Install stuff
 
 sbt "docker"
 
-custom sbt task?
 
+docker compose -f stack.yml up db
 docker compose -f stack.yml  up -d
 docker compose -f stack.yml down
 
