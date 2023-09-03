@@ -114,11 +114,12 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     case Msg.OnLoginError => ???
     case Msg.CheckIfLoggedIn =>
       (model, EffectHelper.lookForJWT(model))
+    case Msg.TryRefresh => (model, HttpHelper.refresh)
     case Msg.SetLoggedIn(loggedIn) =>
       (
         model.copy(signedIn = loggedIn),
         if loggedIn then Cmd.Batch(Cmd.emit(Msg.JumpToLocations), EffectHelper.showUpdateButtons())
-        else Cmd.emit(Msg.JumpToLocations)
+        else Cmd.None
       )
     case Msg.BeginAddNewLocation =>
       val nextMessage = model.map match

@@ -61,25 +61,27 @@ object HttpHelper:
         c.getLocations()
           .map(l =>
             println(l)
-            Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
+            Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation))
+          )
     Cmd.Run(io)
 
   def deleteLocation(uuid: String): Cmd[IO, Msg] =
     val io = authedLocs
-      .map {
-        _.deleteLocation(uuid).map(resp => Msg.OnDeleteLocationSuccess(resp.message, uuid))
-      }
+      .map(_.deleteLocation(uuid).map(resp => Msg.OnDeleteLocationSuccess(resp.message, uuid)))
       .getOrElse(IO.pure(Msg.OnDeleteLocationFailure("failed to instantiate client")))
     Cmd.Run(io)
 
   def login(username: String, password: String): Cmd[IO, Msg] =
     val io = auth
-      .map { c =>
-        c.login(username, password).map(resp => Msg.OnLoginSuccess)
-      }
+      .map(_.login(username, password).map(resp => Msg.OnLoginSuccess))
       .getOrElse(IO(Msg.OnLoginError))
     Cmd.Run(io)
 
+  def refresh: Cmd[IO, Msg] =
+    val io = auth
+      .map(_.refresh().map(_ => Msg.SetLoggedIn(true)))
+      .getOrElse(IO(Msg.SetLoggedIn(false)))
+    Cmd.Run(io)
   def getLocationAddress(model: Model): Cmd[IO, Msg] =
     Cmd.Run {
       model.newLocationMarker

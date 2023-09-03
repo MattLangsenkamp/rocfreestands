@@ -5,6 +5,7 @@ namespace com.rocfreestands.core
 use alloy#simpleRestJson
 
 @simpleRestJson
+@httpBearerAuth
 service AuthService {
     operations: [Login, Refresh]
 }
@@ -15,7 +16,7 @@ operation Login {
     output: AuthResponse
 }
 
-
+@auth([httpBearerAuth])
 @http(method: "POST", uri: "/refresh")
 operation Refresh {
     input : AuthRefresh
@@ -30,11 +31,7 @@ structure AuthRequest {
     password: String
 }
 
-structure AuthRefresh {
-    @required
-    @httpHeader("Cookie")
-    cookie: String
-}
+structure AuthRefresh {}
 
 structure AuthResponse {
     @httpHeader("Set-Cookie")
