@@ -13,5 +13,13 @@ jobs:
         with:
           distribution: adopt-hotspot
           java-version: 17
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
       - name: Build
-        run: sbt compile
+        run:
+          npm install
+          npx tailwindcss -i ./style.css -o ./output.css
+          sbt compile
