@@ -5,6 +5,11 @@ on:
 jobs:
   build-for-docker:
     runs-on: ubuntu-latest
+    env:
+      # define Java options for both official sbt and sbt-extras
+      JAVA_OPTS: -Xmx4096M
+      JVM_OPTS: -Xmx4096M
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
