@@ -18,4 +18,6 @@ jobs:
         with:
           node-version: 20
       - name: Buildi
-        run: npm install
+        run:
+          npm install;
+          sbt compile
