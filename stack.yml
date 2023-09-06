@@ -1,6 +1,13 @@
 version: '3.7'
 
 services:
+  front:
+    restart: always
+    image: mattlangsenkamp/rocfreestands-front:latest
+    ports:
+      - "8079:8079"
+    depends_on:
+      - server
   server:
     restart: always
     image: rocfreestands/server:latest

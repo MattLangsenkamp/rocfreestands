@@ -54,7 +54,6 @@ object LeafletHelper:
     MapLocation(location, marker)
 
   private def setContent(location: Location): String =
-    println(location.uuid)
     val url =
       f"https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}"
     f"""<div class=\"inline-block break-words w-64\">
