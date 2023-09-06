@@ -74,7 +74,7 @@ lazy val server = crossProject(JVMPlatform)
         copy(appDir, targetDir, chown = "daemon:daemon")
       }
     },
-    docker / imageNames := Seq(ImageName("rocfreestands-http4s:latest"))
+    docker / imageNames := Seq(ImageName("mattlangsenkamp/rocfreestands-http4s:latest"))
   )
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockPlug)
