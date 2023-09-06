@@ -35,11 +35,14 @@ object AuthServiceImpl:
       f"Authorization=${JwtCirce.encode(makeClaim(username), config.jwtSecretKey, algo)}"
 
     override def refresh(): IO[AuthResponse] =
-      IO(AuthResponse("Successfully Refreshed Token", Some(makeToken(config.username))))
+      IO.println("refreshing auth token") *>
+        IO(AuthResponse("Successfully Refreshed Token", Some(makeToken(config.username))))
 
-    override def login(username: String, password: String): IO[AuthResponse] = IO(
-      if username.equals(config.username) && password.equals(config.password) then
-        AuthResponse(message = "Login Successful", cookie = Some(makeToken(username)))
-      else AuthResponse("Login Failed")
-    )
+    override def login(username: String, password: String): IO[AuthResponse] =
+      IO.println(s"Attempting to log in user: $username") *>
+        IO(
+          if username.equals(config.username) && password.equals(config.password) then
+            AuthResponse(message = "Login Successful", cookie = Some(makeToken(username)))
+          else AuthResponse("Login Failed")
+        )
   }
