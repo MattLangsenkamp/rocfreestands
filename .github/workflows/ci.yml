@@ -30,4 +30,5 @@ jobs:
       - name: Buildi
         run:
           npm install;
-          sbt compile
+          sbt docker;
+          docker push rocfreestands-http4s:latest mattlangsenkamp/rocfreestands-http4s:latest
