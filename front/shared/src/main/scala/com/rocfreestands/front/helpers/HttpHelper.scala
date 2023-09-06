@@ -22,16 +22,18 @@ object HttpHelper:
 
   private case class Address(display_name: String)
 
+  private val clientUri = uri"http://127.0.0.1:8081/"
+
   private val client = FetchClientBuilder[IO]
     .withMode(RequestMode.cors)
     .withCredentials(RequestCredentials.include)
     .create
   private val pubLocs =
-    SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
+    SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(clientUri).use
   private val auth =
-    SimpleRestJsonBuilder(AuthService).client(client).uri(uri"http://127.0.0.1:8081/").use
+    SimpleRestJsonBuilder(AuthService).client(client).uri(clientUri).use
   private val authedLocs =
-    SimpleRestJsonBuilder(AuthedLocationsService).client(client).uri(uri"http://127.0.0.1:8081/").use
+    SimpleRestJsonBuilder(AuthedLocationsService).client(client).uri(clientUri).use
 
   def createLocation(
       nlf: LocationForm,
@@ -60,7 +62,6 @@ object HttpHelper:
       case Right(c) =>
         c.getLocations()
           .map(l =>
-            println(l)
             Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation))
           )
     Cmd.Run(io)

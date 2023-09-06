@@ -7,6 +7,7 @@ on:
       - closed
 jobs:
   build-for-docker:
+    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     env:
       # define Java options for both official sbt and sbt-extras
@@ -34,4 +35,7 @@ jobs:
         run:
           npm install;
           sbt docker;
-          docker push mattlangsenkamp/rocfreestands-http4s:latest
+          npm run build;
+          docker buildx build -f front.Dockerfile -t mattlangsenkamp/rocfreestands-front:latest .;
+          docker push mattlangsenkamp/rocfreestands-http4s:latest;
+          docker push mattlangsenkamp/mattlangsenkamp/rocfreestands-front:latest

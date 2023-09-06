@@ -5,7 +5,7 @@ import tyrian.Html
 import tyrian.Html.*
 import tyrian.syntax.*
 
-def locationDetalsPane: Model => Html[Msg] = (model: Model) =>
+def locationDetailsPane: Model => Html[Msg] = (model: Model) =>
 
   val locationPaneStyles =
     """
@@ -53,7 +53,7 @@ def locationDetalsPane: Model => Html[Msg] = (model: Model) =>
       div(cls := "p-2 sm:flex w-full")(text("Name"), nameError),
       input(
         cls         := Styles.inputFormClasses,
-        placeholder := "Enter Username",
+        placeholder := "Enter stand name",
         onInput(name => Msg.UpdateLocationForm(model.newLocationForm.copy(name = name)))
       )
     ),
@@ -72,7 +72,7 @@ def locationDetalsPane: Model => Html[Msg] = (model: Model) =>
       div(cls := "p-2 sm:flex w-full")(text("Address"), addressError),
       input(
         cls         := Styles.inputFormClasses,
-        placeholder := "Enter Address",
+        placeholder := "Enter address",
         value       := model.newLocationForm.address,
         onInput(address => Msg.UpdateLocationForm(model.newLocationForm.copy(address = address)))
       )

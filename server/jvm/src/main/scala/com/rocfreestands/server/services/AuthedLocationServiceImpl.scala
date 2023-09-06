@@ -27,8 +27,8 @@ object AuthedLocationServiceImpl:
             Location(uuid, address, name, description, latitude, longitude, image, creationDateTime)
           )
           p <- os.writeImage(uuid, image)
-          l <- lr.createLocation(loc.copy(image = p.toString))
-        yield l
+          _ <- lr.createLocation(loc.copy(image = p.toString))
+        yield loc
 
       override def deleteLocation(uuid: String): IO[DeleteLocationOutput] =
         for

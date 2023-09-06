@@ -23,14 +23,10 @@ import smithy4s.{ByteArray, Timestamp}
 import smithy4s.http4s.SimpleRestJsonBuilder
 import com.rocfreestands.server.database.{Flyway, SkunkSession}
 import com.rocfreestands.server.middleware.JwtAuthMiddlewear
-import com.rocfreestands.server.services.{
-  AuthServiceImpl,
-  LocationsRepository,
-  ObjectStore,
-  fromPath,
-  fromSession,
-  makePublicLocationService
-}
+import com.rocfreestands.server.services.{ObjectStore, LocationsRepository}
+import com.rocfreestands.server.services.PublicLocationServiceImpl.makePublicLocationService
+import com.rocfreestands.server.services.LocationsRepository.makeLocationRepository
+import com.rocfreestands.server.services.ObjectStore.makeObjectStore
 import com.rocfreestands.server.services.AuthServiceImpl.fromServerConfig
 import com.rocfreestands.server.services.AuthedLocationServiceImpl.makeAuthedLocationService
 import fly4s.core.*
@@ -103,8 +99,8 @@ object Main extends IOApp.Simple:
       psqlConnection <- SkunkSession.fromServerConfig(serverConfig)
       psqlSession    <- psqlConnection
       p              <- createFolderIfNotExist(Path.of(serverConfig.picturePath)).toResource
-      im             <- fromPath(p).toResource
-      db             <- fromSession(psqlSession).toResource
+      im             <- makeObjectStore(p).toResource
+      db             <- makeLocationRepository(psqlSession).toResource
       routes         <- Routes.all(serverConfig, db, im)
       srv <- EmberServerBuilder
         .default[IO]
