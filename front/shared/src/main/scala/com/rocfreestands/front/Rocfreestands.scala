@@ -90,12 +90,11 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
         EffectHelper.addLocationsToMap(model, locations)
       )
     case Msg.AddLocationToMap(location) =>
-      val m = (
+      (
         model.copy(locations = model.locations ::: location :: Nil),
         EffectHelper.addNewPermanentLocation(model, location)
       )
-      println(m._1.locations)
-      m
+
     case Msg.LoadImageToLocationForm =>
       (model, EffectHelper.readImageToLocationForm(model))
     case Msg.UpdateLoginForm(f) =>
@@ -270,7 +269,7 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       footerComponent(model)
     )
 
-  def catchDeleteReq(model: Model): Sub[IO, Msg] =
+  private def catchDeleteReq(model: Model): Sub[IO, Msg] =
     Sub.fromEvent("update-requested", document) { case e: CustomEvent =>
       Option(Msg.ProposeDeleteLocation(e.detail.asInstanceOf[String]))
     }

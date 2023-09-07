@@ -19,9 +19,9 @@ services:
       PSQL_PASSWORD: password
       RFS_USERNAME: admin
       RFS_PASSWORD: admin
-      PICTURE_PATH: /pictures
+      PICTURE_PATH: /var/lib/rocfreestands
     volumes:
-      - server:/app
+      - server:/var/lib/rocfreestands
     depends_on:
       - db
   db:
