@@ -15,8 +15,8 @@ trait LocationsRepository[F[_]]:
   def createLocation(location: Location): IO[Location]
 
   def deleteLocation(uuid: String): IO[String]
-  
-object LocationsRepository:  
+
+object LocationsRepository:
   def makeLocationRepository(s: Session[IO]): IO[LocationsRepository[IO]] =
     for
       getLoc    <- s.prepare(getLocations)
@@ -25,10 +25,11 @@ object LocationsRepository:
     yield new LocationsRepository[IO]:
       override def getLocations: IO[Locations] =
         getLoc.stream(Void, 64).compile.toList.map(Locations.apply)
-  
+
       override def createLocation(location: Location): IO[Location] =
         s.transaction.use { xa =>
           for
+
             sp               <- xa.savepoint
             creationDateTime <- IO.pure(Timestamp.nowUTC())
             _ <- createLoc
@@ -41,6 +42,6 @@ object LocationsRepository:
               }
           yield location
         }
-  
+
       override def deleteLocation(uuid: String): IO[String] =
         deleteLoc.execute(uuid).map(_ => "deleted location")

@@ -51,9 +51,13 @@ object Main extends IOApp.Simple:
         Set(
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8080)),
           Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(5173)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8079)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), None),
           Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8080)),
           Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8081)),
-          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(5173))
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(5173)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), Some(8079)),
+          Origin.Host(Uri.Scheme.http, Uri.RegName("127.0.0.1"), None)
         )
       )
 

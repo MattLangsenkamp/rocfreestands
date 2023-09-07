@@ -16,7 +16,10 @@ object PublicLocationServiceImpl:
     new PublicLocationsService[IO]:
       override def getLocations(): IO[Locations] =
         for
+          _         <- IO.println("getting locations")
           locations <- lr.getLocations
-          ios <- IO.pure(locations.locations.map(l => os.getImage(l.uuid).map(img => l.copy(image = img))))
+          ios <- IO.pure(
+            locations.locations.map(l => os.getImage(l.uuid).map(img => l.copy(image = img)))
+          )
           finalLocations <- IO.parSequenceN(5)(ios)
         yield Locations(finalLocations)

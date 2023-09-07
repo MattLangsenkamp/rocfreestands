@@ -22,12 +22,18 @@ object HttpHelper:
 
   private case class Address(display_name: String)
 
-  private val clientUri = uri"http://127.0.0.1:8081/"
+  private val mode = scalajs.js.`import`.meta.env.MODE.asInstanceOf[String]
+  private val clientUri =
+    if mode == "development" then uri"http://127.0.0.1:8081/" else uri"https://rocfreestands.com/api"
 
   private val client = FetchClientBuilder[IO]
     .withMode(RequestMode.cors)
     .withCredentials(RequestCredentials.include)
     .create
+
+  private val addressClient = FetchClientBuilder[IO]
+    .create
+
   private val pubLocs =
     SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(clientUri).use
   private val auth =
@@ -61,9 +67,7 @@ object HttpHelper:
         IO.pure(Msg.NoOp)
       case Right(c) =>
         c.getLocations()
-          .map(l =>
-            Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation))
-          )
+          .map(l => Msg.AddLocationsToMap(l.locations.map(LeafletHelper.locationToMapLocation)))
     Cmd.Run(io)
 
   def deleteLocation(uuid: String): Cmd[IO, Msg] =
@@ -90,7 +94,7 @@ object HttpHelper:
           val uri =
             f"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${marker.getLatLng().lat}&lon=${marker.getLatLng().lng}"
           for
-            address <- client.expect[Address](uri).attempt
+            address <- addressClient.expect[Address](uri).attempt
             msg <- IO {
               address
                 .map(addr => Msg.ResolvePlaceHolderAddress(addr.display_name))

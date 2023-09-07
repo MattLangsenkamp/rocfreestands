@@ -1,6 +1,8 @@
 # Rocfreestands
 
-This repo contains the code used to develop [Rocfreestands](https://rocfreestands.com). The frontend is built using ScalaJS and the Tyrian framework. The backend is built using http4s, postgres, and the typelevel FP stack. The frontend and backend commuincate via rest endpoints defined using the Smithy IDL. The app is deployed to Digital ocean and netlify, through the help of docker and Github Actions 
+This repo contains the code used to develop [Rocfreestands](https://rocfreestands.com). The frontend is built using [ScalaJS](https://www.scala-js.org/) 
+and the [Tyrian Framework](https://tyrian.indigoengine.io/). The backend is built using [http4s](https://http4s.org/), postgres, and the 
+[Typelevel FP stack](https://typelevel.org/). The frontend and backend communicate via rest endpoints defined using the [Smithy IDL](https://smithy.io/2.0/index.html). The app is deployed to Digital Ocean, through the help of docker and Github Actions 
 
 
 ## Environment setup
@@ -8,7 +10,7 @@ This repo contains the code used to develop [Rocfreestands](https://rocfreestand
 The following tools where used to set up the development environment, if these requirements are already met this step can be skipped \
 - [nvm](https://github.com/nvm-sh/nvm) 
 - [sdkman](https://sdkman.io/)
-- [docker]()
+- [docker](https://docs.docker.com/engine/install/ubuntu/)
 
 ```
 # JS stuff
@@ -22,13 +24,13 @@ sdk install scala 3.3.0
 sdk install sbt 1.9.0
 ```
 
-## Starting The Backend
+## Starting Just The Backend
 
 ### Using Docker 
 The fastest way to start the backend is to use Docker Compose. This will automatically start a postgres service, then the server as well as create volumes to persist data
-Simply run 
+simply run 
 
-`docker compose -f stack.yml  up -d`
+`docker compose -f stack.yml  up db server -d`
 
 To stop the services run 
 
@@ -42,7 +44,7 @@ docker volume rm <names of volumes to remove>
 
 To confirm that the services started correctly navigate to http://localhost:8081/docs. The swagger documentation should be present
 
-To change ENV variables alter them in the  `stack.yml` file prior to the first time the you run `docker compose up`
+To change ENV variables alter them in the  `stack.yml` file prior to the first time you run `docker compose up`
 ### Using SBT
 Even when the server is being run with SBT postgres is still run via Docker. To start just postgres run
 
@@ -54,7 +56,7 @@ Then run
 
 To confirm that the services started correctly navigate to http://localhost:8081/docs. The swagger documentation should be present
 
-## Starting The Frontend
+## Starting Just The Frontend
 
 First make sure the backend is running as the frontend will immediately try and pull data from the backend.
 

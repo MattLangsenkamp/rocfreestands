@@ -10,7 +10,7 @@ services:
       - server
   server:
     restart: always
-    image: rocfreestands/server:latest
+    image: mattlangsenkamp/rocfreestands-http4s:latest
     ports:
       - "8081:8081"
     environment:
@@ -19,12 +19,11 @@ services:
       PSQL_PASSWORD: password
       RFS_USERNAME: admin
       RFS_PASSWORD: admin
-      PICTURE_PATH: /pictures
+      PICTURE_PATH: /var/lib/rocfreestands
     volumes:
-      - server:/app
+      - server:/var/lib/rocfreestands
     depends_on:
       - db
-
   db:
     image: postgres:15.4
     restart: always
