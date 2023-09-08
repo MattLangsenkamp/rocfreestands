@@ -24,15 +24,14 @@ object HttpHelper:
 
   private val mode = scalajs.js.`import`.meta.env.MODE.asInstanceOf[String]
   private val clientUri =
-    if mode == "development" then uri"http://127.0.0.1:8081/" else uri"https://rocfreestands.com/api"
+    if mode == "development" then uri"http://127.0.0.1:8081/" else uri"https://rocfreestands.com/api/"
 
   private val client = FetchClientBuilder[IO]
     .withMode(RequestMode.cors)
     .withCredentials(RequestCredentials.include)
     .create
 
-  private val addressClient = FetchClientBuilder[IO]
-    .create
+  private val addressClient = FetchClientBuilder[IO].create
 
   private val pubLocs =
     SimpleRestJsonBuilder(PublicLocationsService).client(client).uri(clientUri).use
@@ -78,7 +77,12 @@ object HttpHelper:
 
   def login(username: String, password: String): Cmd[IO, Msg] =
     val io = auth
-      .map(_.login(username, password).map(resp => Msg.OnLoginSuccess))
+      .map(
+        _.login(username, password).map(resp =>
+          if resp.message == "Login Successful" then Msg.OnLoginSuccess
+          else Msg.OnLoginError
+        )
+      )
       .getOrElse(IO(Msg.OnLoginError))
     Cmd.Run(io)
 

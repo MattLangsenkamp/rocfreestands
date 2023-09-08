@@ -21,7 +21,7 @@ npm install
 # Scala stuff
 sdk install java 22.3.1.r19-grl
 sdk install scala 3.3.0
-sdk install sbt 1.9.0
+sdk install sbt 1.9.4
 ```
 
 ## Starting Just The Backend

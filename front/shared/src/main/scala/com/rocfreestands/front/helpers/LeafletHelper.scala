@@ -61,7 +61,7 @@ object LeafletHelper:
        |           <img src=\"${location.image}\" class=\"max-h-60 rounded\">
        |       </div>
        |       <div class="text-lg w-64 flex font-semibold text-indigo-400">${location.name}</div>
-       |       <div>${location.description}</div>
+       |       <div style="border-bottom-width: 4px; padding-bottom: 8px;">${location.description}</div>
        |       <div>${location.address}</div>
        |       <a href="$url" target="_blank">
        |          <span

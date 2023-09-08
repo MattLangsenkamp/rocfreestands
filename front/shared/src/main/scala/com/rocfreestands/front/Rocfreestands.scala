@@ -110,7 +110,19 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
       else (model.copy(loginForm = checkedForm), Cmd.None)
     case Msg.OnLoginSuccess =>
       (model.copy(loginForm = LoginForm(None, None, None, None)), Cmd.emit(Msg.SetLoggedIn(true)))
-    case Msg.OnLoginError => ???
+    case Msg.OnLoginError =>
+      (
+        model.copy(
+          popupModel = Some(
+            PopupModel(
+              f"Username or password was incorrect",
+              "Ok",
+              Msg.ClosePopup
+            )
+          )
+        ),
+        Cmd.None
+      )
     case Msg.CheckIfLoggedIn =>
       (model, EffectHelper.lookForJWT(model))
     case Msg.TryRefresh => (model, HttpHelper.refresh)
@@ -265,8 +277,8 @@ object Rocfreestands extends TyrianApp[Msg, Model]:
     div(cls := Styles.containerClasses, id := "container")(
       model.popupModel.map(popup).orEmpty,
       headerComponent(model),
-      contents,
-      footerComponent(model)
+      contents
+      // footerComponent(model)
     )
 
   private def catchDeleteReq(model: Model): Sub[IO, Msg] =
