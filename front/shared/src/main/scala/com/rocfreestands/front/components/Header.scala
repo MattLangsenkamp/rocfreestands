@@ -28,7 +28,7 @@ def headerComponent: Model => Html[Msg] =
           button(
             cls := "font-medium text-gray-500 hover:text-gray-900",
             onClick(Msg.JumpToLocations)
-          )("locations")
+          )("map")
         )
       )
     )
